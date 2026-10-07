@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,14 +14,22 @@ public class PacienteService {
 
     private final PacienteRepository pacienteRepository;
     private final PasswordEncoder passwordEncoder;
+    private final String dummyHash;
 
     public PacienteService(PacienteRepository pacienteRepository, PasswordEncoder passwordEncoder) {
         this.pacienteRepository = pacienteRepository;
         this.passwordEncoder = passwordEncoder;
+        this.dummyHash = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
     // US-001: Registro
-    public Paciente register(String fullName, String email, String rawPassword) {
+    public Paciente register(String fullName, String email, String rawPassword,
+            boolean termsAccepted, String termsVersion) {
+        if (!termsAccepted || !RegistrationTerms.VERSION.equals(termsVersion)) {
+            throw new TerminosInvalidosException();
+        }
+        email = email.strip().toLowerCase(Locale.ROOT);
+        fullName = fullName.strip();
         if (pacienteRepository.existsByEmail(email)) {
             throw new EmailDuplicadoException(email);
         }
@@ -30,6 +39,8 @@ public class PacienteService {
                 .password(passwordEncoder.encode(rawPassword))
                 .role(Paciente.Role.PACIENTE)
                 .active(true)
+                .termsAcceptedAt(java.time.LocalDateTime.now())
+                .termsVersion(RegistrationTerms.VERSION)
                 .build();
 
         return pacienteRepository.save(paciente);
@@ -37,9 +48,10 @@ public class PacienteService {
 
     // US-002: Inicio de sesión
     public Paciente login(String email, String rawPassword) {
-        Optional<Paciente> pacienteOpt = pacienteRepository.findByEmail(email);
+        Optional<Paciente> pacienteOpt = pacienteRepository.findByEmail(email.strip().toLowerCase(Locale.ROOT));
 
         if (pacienteOpt.isEmpty()) {
+            passwordEncoder.matches(rawPassword, dummyHash);
             throw new CredencialesInvalidasException();
         }
         Paciente paciente = pacienteOpt.get();
@@ -47,12 +59,9 @@ public class PacienteService {
             throw new CredencialesInvalidasException();
         }
         
-        // TODO: Si deseas activar o desactivar cuentas más adelante, descomenta esta validación:
-        /*
         if (!paciente.isActive()) {
-            throw new CuentaInactivaException(email);
+            throw new CredencialesInvalidasException();
         }
-        */
 
         return paciente;
     }

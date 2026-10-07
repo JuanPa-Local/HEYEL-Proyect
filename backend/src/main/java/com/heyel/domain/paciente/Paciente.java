@@ -7,12 +7,15 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "pacientes")
 @Builder
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Paciente {
@@ -25,6 +28,7 @@ public class Paciente {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(nullable = false)
@@ -33,6 +37,13 @@ public class Paciente {
     @Builder.Default
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // Nullable for accounts created before explicit acceptance was introduced.
+    // Never infer or backfill consent for existing patients.
+    private LocalDateTime termsAcceptedAt;
+
+    @Column(length = 50)
+    private String termsVersion;
 
     // Campos Opcionales
     @Column(nullable = true)
