@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { historialService } from '../../api/services/historialService';
 
 const formatoFecha = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+const TODAS = 'TODAS';
 
 export function formatearFecha(iso) {
   return formatoFecha.format(new Date(`${iso}T00:00:00Z`));
@@ -9,6 +10,8 @@ export function formatearFecha(iso) {
 
 export default function Historial() {
   const [estado, setEstado] = useState({ cargando: true, error: '', datos: null });
+  const [categoria, setCategoria] = useState(TODAS);
+  const [institucion, setInstitucion] = useState(TODAS);
 
   function cargar() {
     setEstado({ cargando: true, error: '', datos: null });
@@ -19,6 +22,24 @@ export default function Historial() {
 
   useEffect(() => { cargar(); }, []);
 
+  const registros = estado.datos?.registros ?? [];
+
+  // Solo se ofrecen las categorías que de verdad aparecen en el historial.
+  const categorias = useMemo(() => {
+    const vistas = new Map();
+    registros.forEach(r => vistas.set(r.categoria, r.categoriaEtiqueta));
+    return [...vistas].map(([valor, etiqueta]) => ({ valor, etiqueta }));
+  }, [registros]);
+
+  const visibles = registros.filter(r =>
+    (categoria === TODAS || r.categoria === categoria) &&
+    (institucion === TODAS || r.institucionId === institucion));
+
+  function quitarFiltros() {
+    setCategoria(TODAS);
+    setInstitucion(TODAS);
+  }
+
   if (estado.cargando) return <p role="status">Consultando tus instituciones…</p>;
 
   if (estado.error) {
@@ -28,7 +49,8 @@ export default function Historial() {
     </div>;
   }
 
-  const { registros, instituciones, noDisponibles, datosSimulados } = estado.datos;
+  const { instituciones, noDisponibles, datosSimulados } = estado.datos;
+  const filtrando = categoria !== TODAS || institucion !== TODAS;
 
   return <section className="historial" aria-labelledby="historial-titulo">
     <p className="eyebrow">TU HISTORIAL CLÍNICO</p>
@@ -42,21 +64,44 @@ export default function Historial() {
       No pudimos consultar: {noDisponibles.map(i => i.nombre).join(', ')}. El resto de tu historial sí está actualizado.
     </p>}
 
-    <p className="resumen">{registros.length} registros de {instituciones.length} instituciones</p>
+    {registros.length > 0 && <div className="filtros">
+      <div className="chips" role="group" aria-label="Filtrar por categoría">
+        <button type="button" className="chip" aria-pressed={categoria === TODAS} onClick={() => setCategoria(TODAS)}>Todos</button>
+        {categorias.map(c => <button key={c.valor} type="button" className="chip"
+          aria-pressed={categoria === c.valor} onClick={() => setCategoria(c.valor)}>{c.etiqueta}</button>)}
+      </div>
+      <label className="filtro-institucion">Institución
+        <select value={institucion} onChange={e => setInstitucion(e.target.value)}>
+          <option value={TODAS}>Todas las instituciones</option>
+          {instituciones.map(i => <option key={i.id} value={i.id}>{i.nombre}</option>)}
+        </select>
+      </label>
+    </div>}
+
+    <p className="resumen" aria-live="polite">
+      {filtrando
+        ? `Mostrando ${visibles.length} de ${registros.length} registros`
+        : `${registros.length} registros de ${instituciones.length} instituciones`}
+    </p>
 
     {registros.length === 0
       ? <p className="hint">Todavía no encontramos registros a tu nombre en tus instituciones.</p>
-      : <table className="historial-tabla">
-        <caption className="visually-hidden">Registros clínicos ordenados del más reciente al más antiguo</caption>
-        <thead><tr><th scope="col">Fecha</th><th scope="col">Registro</th><th scope="col">Institución</th><th scope="col">Categoría</th></tr></thead>
-        <tbody>
-          {registros.map(registro => <tr key={registro.id}>
-            <td data-label="Fecha"><time dateTime={registro.fecha}>{formatearFecha(registro.fecha)}</time></td>
-            <td data-label="Registro"><strong>{registro.titulo}</strong><span className="detalle">{registro.detalle}</span></td>
-            <td data-label="Institución">{registro.institucionNombre}</td>
-            <td data-label="Categoría"><span className={`tag tag-${registro.categoria.toLowerCase()}`}>{registro.categoriaEtiqueta}</span></td>
-          </tr>)}
-        </tbody>
-      </table>}
+      : visibles.length === 0
+        ? <div className="vacio">
+          <p>No hay registros con estos filtros.</p>
+          <button type="button" className="retry" onClick={quitarFiltros}>Quitar filtros</button>
+        </div>
+        : <table className="historial-tabla">
+          <caption className="visually-hidden">Registros clínicos ordenados del más reciente al más antiguo</caption>
+          <thead><tr><th scope="col">Fecha</th><th scope="col">Registro</th><th scope="col">Institución</th><th scope="col">Categoría</th></tr></thead>
+          <tbody>
+            {visibles.map(registro => <tr key={registro.id}>
+              <td data-label="Fecha"><time dateTime={registro.fecha}>{formatearFecha(registro.fecha)}</time></td>
+              <td data-label="Registro"><strong>{registro.titulo}</strong><span className="detalle">{registro.detalle}</span></td>
+              <td data-label="Institución">{registro.institucionNombre}</td>
+              <td data-label="Categoría"><span className={`tag tag-${registro.categoria.toLowerCase()}`}>{registro.categoriaEtiqueta}</span></td>
+            </tr>)}
+          </tbody>
+        </table>}
   </section>;
 }

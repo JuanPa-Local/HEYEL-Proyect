@@ -31,7 +31,7 @@ describe('Historial consolidado (US-03, US-05)', () => {
     expect(filas()).toEqual(['Hemograma completo', 'Consulta de medicina general', 'Glicemia en ayunas']);
     expect(screen.getByText('3 registros de 2 instituciones')).toBeTruthy();
     expect(screen.getByText('Datos de demostración.')).toBeTruthy();
-    expect(screen.getAllByText('IPS Salud Vital')).toHaveLength(2);
+    expect(within(screen.getByRole('table')).getAllByText('IPS Salud Vital')).toHaveLength(2);
   });
 
   it('muestra el error y permite reintentar', async () => {
@@ -45,5 +45,39 @@ describe('Historial consolidado (US-03, US-05)', () => {
 
   it('formatea la fecha sin correrse de día', () => {
     expect(formatearFecha('2026-08-15')).toMatch(/15/);
+  });
+});
+
+describe('Filtros del historial (US-04, US-05)', () => {
+  it('filtra por categoría y solo ofrece las categorías que existen', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByText('Hemograma completo');
+    const grupo = screen.getByRole('group', { name: 'Filtrar por categoría' });
+    expect(within(grupo).queryByRole('button', { name: 'Imagenología' })).toBeNull();
+    fireEvent.click(within(grupo).getByRole('button', { name: 'Laboratorio' }));
+    expect(filas()).toEqual(['Hemograma completo', 'Glicemia en ayunas']);
+    expect(within(grupo).getByRole('button', { name: 'Laboratorio' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('Mostrando 2 de 3 registros')).toBeTruthy();
+  });
+
+  it('filtra por institución', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByText('Hemograma completo');
+    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: ips.id } });
+    expect(filas()).toEqual(['Consulta de medicina general', 'Glicemia en ayunas']);
+  });
+
+  it('combina filtros, avisa cuando no hay resultados y permite quitarlos', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByText('Hemograma completo');
+    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: lab.id } });
+    fireEvent.click(screen.getByRole('button', { name: 'Consulta' }));
+    expect(screen.getByText('No hay registros con estos filtros.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar filtros' }));
+    expect(filas()).toHaveLength(3);
+    expect(screen.getByText('3 registros de 2 instituciones')).toBeTruthy();
   });
 });
