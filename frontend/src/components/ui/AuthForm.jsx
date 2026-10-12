@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import { authService } from '../../api/services/authService';
 
@@ -55,7 +56,7 @@ export default function AuthForm({ register = false, onLogin, onRegistered }) {
   return <form onSubmit={submit}>
     {register && <label>Nombre completo<input name="fullName" autoComplete="name" minLength={2} maxLength={100} required placeholder="Tu nombre y apellido"/></label>}
     <label>Correo electrónico<input name="email" type="email" autoComplete="email" maxLength={254} required placeholder="nombre@correo.com"/></label>
-    <label>Contraseña<div className="password"><input name="password" type={visible ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'} minLength={register ? 12 : 1} maxLength={64} required aria-describedby={register ? 'password-help' : undefined}/><button type="button" className="reveal" aria-pressed={visible} onClick={() => setVisible(!visible)}>{visible ? 'Ocultar' : 'Mostrar'}</button></div></label>
+    <label>Contraseña<div className="password"><input name="password" type={visible ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'} minLength={register ? 12 : 1} maxLength={64} required aria-describedby={register ? 'password-help' : undefined}/><button type="button" className="reveal" aria-pressed={visible} onClick={() => setVisible(!visible)}><span aria-hidden="true">{visible ? '◉' : '◎'}</span>{' '}{visible ? 'Ocultar' : 'Mostrar'}</button></div></label>
     {register && <>
       <p id="password-help" className="hint">Usa entre 12 y 64 caracteres. Una frase larga es una buena opción.</p>
       <label>Confirma tu contraseña<input name="confirmPassword" type={visible ? 'text' : 'password'} autoComplete="new-password" maxLength={64} required/></label>
