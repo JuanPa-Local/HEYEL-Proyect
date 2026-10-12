@@ -17,7 +17,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:heyel;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
     "spring.datasource.driver-class-name=org.h2.Driver",
-    "spring.jpa.hibernate.ddl-auto=create-drop"
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    // Estas pruebas registran e inician sesión muchas veces; el límite se prueba en LimiteDeIntentosTests.
+    "heyel.limite.login-fallidos-por-minuto=1000",
+    "heyel.limite.registros-por-hora=1000"
 })
 @AutoConfigureMockMvc
 class BackendApplicationTests {

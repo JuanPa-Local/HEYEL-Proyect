@@ -1,8 +1,11 @@
 package com.heyel.presentation.controller;
 
+import com.heyel.domain.paciente.Paciente;
 import com.heyel.domain.paciente.PacienteService;
 import com.heyel.domain.paciente.RegistrationTerms;
+import com.heyel.domain.paciente.exception.CredencialesInvalidasException;
 import com.heyel.presentation.dto.AuthDtos.*;
+import com.heyel.presentation.seguridad.LimiteDeIntentos;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -23,9 +26,11 @@ import java.util.UUID;
 public class AuthController {
     private final PacienteService service;
     private final SecurityContextRepository contexts;
-    public AuthController(PacienteService service, SecurityContextRepository contexts) {
+    private final LimiteDeIntentos limite;
+    public AuthController(PacienteService service, SecurityContextRepository contexts, LimiteDeIntentos limite) {
         this.service = service;
         this.contexts = contexts;
+        this.limite = limite;
     }
     @GetMapping("/api/auth/csrf")
     public Map<String, String> csrf(CsrfToken token) {
@@ -37,14 +42,24 @@ public class AuthController {
                 "paragraphs", RegistrationTerms.PARAGRAPHS);
     }
     @PostMapping({"/api/auth/register", "/api/pacientes/register"})
-    public ResponseEntity<PatientResponse> register(@Valid @RequestBody RegisterRequest body) {
+    public ResponseEntity<PatientResponse> register(@Valid @RequestBody RegisterRequest body, HttpServletRequest request) {
+        limite.consumirRegistro(request.getRemoteAddr());
         return ResponseEntity.status(201).body(PatientResponse.from(
                 service.register(body.fullName(), body.email(), body.password(), body.termsAccepted(), body.termsVersion())));
     }
     @PostMapping({"/api/auth/login", "/api/pacientes/login"})
     public PatientResponse login(@Valid @RequestBody LoginRequest body,
             HttpServletRequest request, HttpServletResponse response) {
-        var patient = service.login(body.email(), body.password());
+        String ip = request.getRemoteAddr();
+        limite.verificarLogin(ip, body.email());
+        Paciente patient;
+        try {
+            patient = service.login(body.email(), body.password());
+        } catch (CredencialesInvalidasException e) {
+            limite.registrarFalloDeLogin(ip, body.email());
+            throw e;
+        }
+        limite.reiniciarLogin(ip, body.email());
         // Rotate the session ID to prevent session fixation.
         request.getSession();
         request.changeSessionId();

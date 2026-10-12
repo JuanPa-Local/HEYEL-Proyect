@@ -14,5 +14,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  # Aplicación completa (frontend + API) en un solo contenedor, igual que en producción.
+  # Se levanta con: docker compose up --build
+  app:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/heyel_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
 volumes:
   heyel_db:

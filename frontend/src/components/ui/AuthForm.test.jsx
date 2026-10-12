@@ -44,6 +44,8 @@ describe('Registro según el ajuste de roadmap', () => {
   });
   it('envía aceptación explícita y la versión de las condiciones mostradas', async () => {
     const done = vi.fn();
+    const user = { id: 'patient', fullName: 'Ana Pérez' };
+    authService.login.mockResolvedValueOnce(user);
     const { container } = render(<AuthForm register onRegistered={done}/>);
     const checkbox = await screen.findByRole('checkbox');
     fillRegistration();
@@ -54,6 +56,18 @@ describe('Registro según el ajuste de roadmap', () => {
       fullName: 'Ana Pérez', email: 'ana@example.com', password: 'Una frase segura 123',
       termsAccepted: true, termsVersion: terms.version,
     });
+    // Tras registrarse entra solo, sin volver a escribir sus datos.
+    expect(authService.login).toHaveBeenCalledWith({ email: 'ana@example.com', password: 'Una frase segura 123' });
+    expect(done).toHaveBeenCalledWith(user);
+  });
+  it('si el ingreso automático falla, avisa que la cuenta quedó creada', async () => {
+    const done = vi.fn();
+    authService.login.mockRejectedValueOnce(new Error('Sin conexión'));
+    const { container } = render(<AuthForm register onRegistered={done}/>);
+    const checkbox = await screen.findByRole('checkbox');
+    fillRegistration(); fireEvent.click(checkbox); fireEvent.submit(container.querySelector('form'));
+    await waitFor(() => expect(done).toHaveBeenCalledWith(null));
+    expect(screen.queryByRole('alert')).toBeNull();
   });
   it('muestra el rechazo de términos de la API junto a la casilla', async () => {
     const done = vi.fn();

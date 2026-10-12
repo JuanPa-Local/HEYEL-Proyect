@@ -34,7 +34,13 @@ export default function AuthForm({ register = false, onLogin, onRegistered }) {
     }
     setPending(true); setError(''); setTermsError('');
     try {
-      if (register) { await authService.register(values); form.reset(); onRegistered(); }
+      if (register) {
+        await authService.register(values);
+        // Entra con los mismos datos para que el paciente llegue directo a su historial.
+        // Si ese login falla, la cuenta ya existe y se le pide iniciar sesión.
+        const user = await authService.login({ email: values.email, password: values.password }).catch(() => null);
+        form.reset(); onRegistered(user);
+      }
       else { const user = await authService.login(values); form.reset(); onLogin(user); }
     } catch (err) {
       if (err.fields?.termsAccepted || err.fields?.termsVersion) {

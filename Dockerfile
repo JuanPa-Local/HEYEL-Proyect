@@ -20,4 +20,7 @@ WORKDIR /app
 COPY --from=backend /app/backend/target/*.jar app.jar
 ENV COOKIE_SECURE=true
 EXPOSE 8080
-CMD ["sh", "-c", "java -XX:MaxRAMPercentage=75 -Dserver.port=${PORT:-8080} -jar app.jar"]
+# Render entrega la base como DATABASE_URL (postgres://usuario:clave@host:puerto/base) y Spring
+# necesita el formato JDBC: se toma lo que va después de la última @ y se le antepone jdbc:postgresql://.
+# El usuario y la clave llegan aparte en DB_USER y DB_PASSWORD.
+CMD ["sh", "-c", "if [ -n \"$DATABASE_URL\" ]; then export DB_URL=\"jdbc:postgresql://${DATABASE_URL##*@}\"; fi; exec java -XX:MaxRAMPercentage=75 -Dserver.port=${PORT:-8080} -jar app.jar"]

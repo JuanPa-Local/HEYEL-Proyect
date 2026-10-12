@@ -3,10 +3,9 @@ package com.heyel.domain.paciente;
 import com.heyel.domain.paciente.exception.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,7 +21,8 @@ public class PacienteService {
         this.dummyHash = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
-    // US-001: Registro
+    // US-001: Registro. Consulta si el correo existe y luego guarda: van en una sola transacción.
+    @Transactional
     public Paciente register(String fullName, String email, String rawPassword,
             boolean termsAccepted, String termsVersion) {
         if (!termsAccepted || !RegistrationTerms.VERSION.equals(termsVersion)) {
@@ -47,14 +47,15 @@ public class PacienteService {
     }
 
     // US-002: Inicio de sesión
+    @Transactional(readOnly = true)
     public Paciente login(String email, String rawPassword) {
-        Optional<Paciente> pacienteOpt = pacienteRepository.findByEmail(email.strip().toLowerCase(Locale.ROOT));
-
-        if (pacienteOpt.isEmpty()) {
-            passwordEncoder.matches(rawPassword, dummyHash);
-            throw new CredencialesInvalidasException();
-        }
-        Paciente paciente = pacienteOpt.get();
+        Paciente paciente = pacienteRepository.findByEmail(email.strip().toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> {
+                    // Se compara igual contra un hash ficticio para que la respuesta tarde lo mismo
+                    // exista o no el correo, y no se pueda averiguar qué correos están registrados.
+                    passwordEncoder.matches(rawPassword, dummyHash);
+                    return new CredencialesInvalidasException();
+                });
         if (!passwordEncoder.matches(rawPassword, paciente.getPassword())) {
             throw new CredencialesInvalidasException();
         }
@@ -66,21 +67,10 @@ public class PacienteService {
         return paciente;
     }
 
+    @Transactional(readOnly = true)
     public Paciente getPacienteById(UUID id) {
         return pacienteRepository.findById(id)
                 .orElseThrow(() -> new PacienteNoEncontradoException(id));
-    }
-
-    public List<Paciente> getAllPacientes() {
-        return pacienteRepository.findAll();
-    }
-
-    public Paciente getProfile(UUID id) {
-        return getPacienteById(id);
-    }
-
-    public String generarHash(String password) {
-        return passwordEncoder.encode(password);
     }
 
     // TODO: Implementar métodos adicionales de PacienteService cuando sea necesario (ej. actualización de perfil, reseteo de contraseña)

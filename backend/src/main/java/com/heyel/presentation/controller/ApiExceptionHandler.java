@@ -1,7 +1,10 @@
 package com.heyel.presentation.controller;
 
 import com.heyel.domain.paciente.exception.*;
+import com.heyel.presentation.seguridad.DemasiadosIntentosException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,6 +22,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(CredencialesInvalidasException.class)
     public ResponseEntity<?> credentials(RuntimeException ex) {
         return ResponseEntity.status(401).body(Map.of("error", "Correo o contraseña incorrectos."));
+    }
+    @ExceptionHandler(DemasiadosIntentosException.class)
+    public ResponseEntity<?> tooManyAttempts(DemasiadosIntentosException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.segundosDeEspera()))
+                .body(Map.of("error", ex.getMessage()));
     }
     @ExceptionHandler(TerminosInvalidosException.class)
     public ResponseEntity<?> terms(TerminosInvalidosException ex) {
