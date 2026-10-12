@@ -110,7 +110,7 @@ La app publicada corre en el plan gratuito de Render:
 - **PostgreSQL:** base gratuita de Render en la misma región del servicio. Vence el 10 de noviembre de 2026.
 - **Variables configuradas:** `DB_URL` (con el hostname interno de la base), `DB_USER`, `DB_PASSWORD` y `COOKIE_SECURE=true`.
 
-Cada push a la rama configurada en Render dispara un nuevo despliegue.
+Para publicar cambios hay que entrar al servicio en Render y usar Manual Deploy → Deploy latest commit, porque el servicio está conectado como repositorio público y no se despliega solo con cada push.
 
 Para crear el despliegue desde cero también está [`render.yaml`](render.yaml): en Render, **New → Blueprint**, conectar este repositorio y confirmar la base `heyel-db` y el servicio `heyel`.
 
