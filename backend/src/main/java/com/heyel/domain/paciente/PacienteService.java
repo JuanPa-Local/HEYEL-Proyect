@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -51,13 +50,13 @@ public class PacienteService {
     // US-002: Inicio de sesión
     @Transactional(readOnly = true)
     public Paciente login(String email, String rawPassword) {
-        Optional<Paciente> pacienteOpt = pacienteRepository.findByEmail(email.strip().toLowerCase(Locale.ROOT));
-
-        if (pacienteOpt.isEmpty()) {
-            passwordEncoder.matches(rawPassword, dummyHash);
-            throw new CredencialesInvalidasException();
-        }
-        Paciente paciente = pacienteOpt.get();
+        Paciente paciente = pacienteRepository.findByEmail(email.strip().toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> {
+                    // Se compara igual contra un hash ficticio para que la respuesta tarde lo mismo
+                    // exista o no el correo, y no se pueda averiguar qué correos están registrados.
+                    passwordEncoder.matches(rawPassword, dummyHash);
+                    return new CredencialesInvalidasException();
+                });
         if (!passwordEncoder.matches(rawPassword, paciente.getPassword())) {
             throw new CredencialesInvalidasException();
         }
