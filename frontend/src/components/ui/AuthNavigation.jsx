@@ -9,7 +9,7 @@ export default function AuthNavigation({ register = false }) {
       <ol>
         <li>Elige <strong>Registrarme</strong> si aún no tienes una cuenta.</li>
         <li>Completa tus datos de prueba, lee las condiciones y marca la casilla para aceptarlas.</li>
-        <li>Después elige <strong>Iniciar sesión</strong> y escribe tu correo y contraseña.</li>
+        <li>Al terminar entras directo a tu historial. Las próximas veces usa <strong>Iniciar sesión</strong> con tu correo y contraseña.</li>
       </ol>
     </details>
   </>;
