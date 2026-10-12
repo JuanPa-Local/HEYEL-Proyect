@@ -5,7 +5,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -72,18 +71,6 @@ public class PacienteService {
     public Paciente getPacienteById(UUID id) {
         return pacienteRepository.findById(id)
                 .orElseThrow(() -> new PacienteNoEncontradoException(id));
-    }
-
-    public List<Paciente> getAllPacientes() {
-        return pacienteRepository.findAll();
-    }
-
-    public Paciente getProfile(UUID id) {
-        return getPacienteById(id);
-    }
-
-    public String generarHash(String password) {
-        return passwordEncoder.encode(password);
     }
 
     // TODO: Implementar métodos adicionales de PacienteService cuando sea necesario (ej. actualización de perfil, reseteo de contraseña)
