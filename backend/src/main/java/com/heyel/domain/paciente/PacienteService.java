@@ -3,6 +3,7 @@ package com.heyel.domain.paciente;
 import com.heyel.domain.paciente.exception.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +23,8 @@ public class PacienteService {
         this.dummyHash = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
-    // US-001: Registro
+    // US-001: Registro. Consulta si el correo existe y luego guarda: van en una sola transacción.
+    @Transactional
     public Paciente register(String fullName, String email, String rawPassword,
             boolean termsAccepted, String termsVersion) {
         if (!termsAccepted || !RegistrationTerms.VERSION.equals(termsVersion)) {
@@ -47,6 +49,7 @@ public class PacienteService {
     }
 
     // US-002: Inicio de sesión
+    @Transactional(readOnly = true)
     public Paciente login(String email, String rawPassword) {
         Optional<Paciente> pacienteOpt = pacienteRepository.findByEmail(email.strip().toLowerCase(Locale.ROOT));
 
@@ -66,6 +69,7 @@ public class PacienteService {
         return paciente;
     }
 
+    @Transactional(readOnly = true)
     public Paciente getPacienteById(UUID id) {
         return pacienteRepository.findById(id)
                 .orElseThrow(() -> new PacienteNoEncontradoException(id));
