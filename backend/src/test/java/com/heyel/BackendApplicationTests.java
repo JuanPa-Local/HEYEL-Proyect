@@ -28,7 +28,7 @@ class BackendApplicationTests {
     @Autowired PacienteRepository patients;
     @Autowired PasswordEncoder encoder;
     private final String account = """
-        {"fullName":"Ana Pérez","email":"ANA@example.com","password":"Una frase segura 123","termsAccepted":true,"termsVersion":"prototipo-2026-10-07"}
+        {"fullName":"Ana Pérez","email":"ANA@example.com","password":"Una frase segura 123","termsAccepted":true,"termsVersion":"prototipo-2026-10-25"}
         """;
     @BeforeEach void clear() { patients.deleteAll(); }
     private void register() throws Exception {
@@ -81,7 +81,7 @@ class BackendApplicationTests {
     }
     @Test void registrationRequiresExplicitCurrentTerms() throws Exception {
         mvc.perform(get("/api/auth/terms")).andExpect(status().isOk())
-            .andExpect(jsonPath("version").value("prototipo-2026-10-07"))
+            .andExpect(jsonPath("version").value("prototipo-2026-10-25"))
             .andExpect(jsonPath("paragraphs").isArray());
         for (String body : new String[] {
                 account.replace("\"termsAccepted\":true,", ""),
@@ -91,7 +91,7 @@ class BackendApplicationTests {
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("fields.termsAccepted").exists());
         }
         mvc.perform(post("/api/pacientes/register").with(csrf()).contentType("application/json")
-            .content(account.replace("prototipo-2026-10-07", "old-version")))
+            .content(account.replace("prototipo-2026-10-25", "old-version")))
             .andExpect(status().isBadRequest());
         assertEquals(0, patients.count());
     }
