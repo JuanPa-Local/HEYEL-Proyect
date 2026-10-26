@@ -2,10 +2,24 @@
 
 HEYEL reúne en un solo lugar el historial clínico que un paciente tiene repartido en distintas instituciones de salud. El paciente crea su cuenta, entra y ve sus exámenes, imágenes y consultas ordenados del más reciente al más antiguo, con filtros por categoría e institución. Es el proyecto del curso Proyecto de Innovación en TI (Pontificia Universidad Javeriana).
 
-- **App desplegada:** https://heyel.onrender.com
-- **Versión:** Release 1 (`v0.1`)
+- **App desplegada y landing:** https://heyel.onrender.com (sin sesión, la raíz muestra la landing; «Crear mi cuenta» lleva al registro)
+- **Versión:** Release 2 (`v0.2`)
 
 > La app está en el plan gratuito de Render. Si nadie la ha usado en un rato, la primera carga puede tardar uno o dos minutos mientras el servidor arranca. Abran la URL unos minutos antes de una demo o de una prueba con usuarios.
+
+## Qué cambió en la versión v0.2
+
+Los cambios salen de la validación del Release 1 con 6 usuarios (hallazgos H1 a H3) y de una solicitud del equipo.
+
+| Update | Origen | Cómo se comprueba en la URL |
+| --- | --- | --- |
+| El registro cuenta los caracteres que le faltan a la contraseña y marca la casilla de condiciones como «Obligatorio» | Hallazgo H1 | Al escribir la contraseña se ve cuántos caracteres faltan para 12 |
+| El botón «Cerrar sesión» resalta sobre el encabezado | Hallazgo H2 | El botón tiene fondo claro sobre el encabezado verde, en celular y computador |
+| Tarjeta «Tu último examen» arriba del historial | Hallazgo H3 | Al entrar se ve el examen de laboratorio más reciente y su institución, sin filtros |
+| Buscador por nombre en el historial | Hallazgo H3 | Al escribir «hemograma» solo quedan esos registros; se combina con los filtros |
+| Gráfica de pie con los registros por institución | Solicitud del equipo | Muestra cuántos registros aporta cada institución; al tocar una, filtra el historial |
+
+Además, la raíz de la URL muestra la **landing** (problema, propuesta de valor, cómo funciona en 3 pasos, captura real y botón para crear la cuenta). Sus visitas y los clics en «Crear mi cuenta» se cuentan con una analítica propia que no usa cookies ni guarda datos de la persona: el total se consulta en `GET /api/analitica/resumen`.
 
 ## Qué incluye la versión v0.1
 
@@ -78,7 +92,7 @@ npm ci
 npm run dev
 ```
 
-**4. Abrir** http://127.0.0.1:5173, elegir **Registrarme**, crear una cuenta de prueba y aceptar las condiciones. Al terminar, la app entra directo al historial.
+**4. Abrir** http://127.0.0.1:5173, elegir **Crear mi cuenta** en la landing, crear una cuenta de prueba y aceptar las condiciones. Al terminar, la app entra directo al historial.
 
 Vite reenvía `/api` a `127.0.0.1:8080` para que la cookie de sesión y el token CSRF funcionen desde el mismo origen. No uses Live Server para este frontend.
 
@@ -101,6 +115,7 @@ Vite reenvía `/api` a `127.0.0.1:8080` para que la cookie de sesión y el token
 | `DATABASE_URL` | Solo en Render con Blueprint: `postgres://...`; el contenedor la convierte en `DB_URL` al arrancar |
 | `HEYEL_LIMITE_LOGIN_FALLIDOS_POR_MINUTO` | `5` intentos fallidos por correo e IP; después responde 429 |
 | `HEYEL_LIMITE_REGISTROS_POR_HORA` | `10` registros por IP; súbelo si varios usuarios se registran desde la misma red en una sesión de validación |
+| `HEYEL_LIMITE_EVENTOS_POR_HORA` | `60` eventos de analítica de la landing por IP, para que nadie infle las visitas |
 
 ## Despliegue en Render
 
@@ -112,7 +127,7 @@ La app publicada corre en el plan gratuito de Render:
 
 Para publicar cambios hay que entrar al servicio en Render y usar Manual Deploy → Deploy latest commit, porque el servicio está conectado como repositorio público y no se despliega solo con cada push.
 
-Para crear el despliegue desde cero también está [`render.yaml`](render.yaml): en Render, **New → Blueprint**, conectar este repositorio y confirmar la base `heyel-db` y el servicio `heyel`.
+Para crear el despliegue desde cero también está [`render.yaml`](render.yaml): en Render, **New → Blueprint**, conectar este repositorio y confirmar la base `heyel-db` y el servicio `heyel`. Un servicio creado así sí se despliega solo con cada commit a `main` (`autoDeployTrigger: commit`); el servicio actual no se creó con el Blueprint y por eso sigue siendo manual.
 
 ## Verificación
 
@@ -150,6 +165,8 @@ render.yaml Blueprint de Render
 | GET | `/api/auth/me` | Datos de la cuenta con sesión activa |
 | POST | `/api/auth/logout` | Cierra la sesión |
 | GET | `/api/historial` | Historial consolidado del paciente con sesión activa |
+| POST | `/api/analitica/eventos` | Cuenta una visita a la landing (`VISITA_LANDING`) o un clic en «Crear mi cuenta» (`CLIC_CREAR_CUENTA`) |
+| GET | `/api/analitica/resumen` | Totales de visitas, clics y cuentas creadas |
 
 ## Límites conocidos
 

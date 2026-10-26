@@ -28,13 +28,17 @@ public class LimiteDeIntentos {
 
     private final Map<String, Bucket> fallosDeLogin = new ConcurrentHashMap<>();
     private final Map<String, Bucket> registros = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> eventos = new ConcurrentHashMap<>();
     private final int fallosDeLoginPorMinuto;
     private final int registrosPorHora;
+    private final int eventosPorHora;
 
     public LimiteDeIntentos(@Value("${heyel.limite.login-fallidos-por-minuto}") int fallosDeLoginPorMinuto,
-                            @Value("${heyel.limite.registros-por-hora}") int registrosPorHora) {
+                            @Value("${heyel.limite.registros-por-hora}") int registrosPorHora,
+                            @Value("${heyel.limite.eventos-por-hora:60}") int eventosPorHora) {
         this.fallosDeLoginPorMinuto = fallosDeLoginPorMinuto;
         this.registrosPorHora = registrosPorHora;
+        this.eventosPorHora = eventosPorHora;
     }
 
     public void verificarLogin(String ip, String email) {
@@ -63,6 +67,15 @@ public class LimiteDeIntentos {
         ConsumptionProbe sonda = cubo.tryConsumeAndReturnRemaining(1);
         if (!sonda.isConsumed()) {
             log.warn("Límite de registros alcanzado desde la IP {}", ip);
+            throw new DemasiadosIntentosException(segundos(sonda.getNanosToWaitForRefill()));
+        }
+    }
+
+    // Analítica de la landing: evita que una sola IP infle las visitas.
+    public void consumirEvento(String ip) {
+        Bucket cubo = eventos.computeIfAbsent(ip, clave -> nuevoCubo(eventosPorHora, Duration.ofHours(1)));
+        ConsumptionProbe sonda = cubo.tryConsumeAndReturnRemaining(1);
+        if (!sonda.isConsumed()) {
             throw new DemasiadosIntentosException(segundos(sonda.getNanosToWaitForRefill()));
         }
     }

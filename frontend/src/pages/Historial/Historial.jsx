@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { historialService } from '../../api/services/historialService';
+import GraficaInstituciones from './GraficaInstituciones';
 
 const formatoFecha = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 const TODAS = 'TODAS';
@@ -8,10 +9,16 @@ export function formatearFecha(iso) {
   return formatoFecha.format(new Date(`${iso}T00:00:00Z`));
 }
 
+// Quita tildes y mayúsculas para que «hemograma», «Hemograma» y «HEMOGRAMA» den lo mismo.
+export function normalizar(texto) {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
 export default function Historial() {
   const [estado, setEstado] = useState({ cargando: true, error: '', datos: null });
   const [categoria, setCategoria] = useState(TODAS);
   const [institucion, setInstitucion] = useState(TODAS);
+  const [busqueda, setBusqueda] = useState('');
 
   function cargar() {
     setEstado({ cargando: true, error: '', datos: null });
@@ -31,13 +38,20 @@ export default function Historial() {
     return [...vistas].map(([valor, etiqueta]) => ({ valor, etiqueta }));
   }, [registros]);
 
-  const visibles = registros.filter(r =>
+  // Los registros llegan del más reciente al más antiguo: el primero de laboratorio es el último examen (hallazgo H3).
+  const ultimoExamen = registros.find(r => r.categoria === 'LABORATORIO');
+
+  // La gráfica usa la categoría y la búsqueda, pero no la institución, para seguir mostrando todas las porciones.
+  const texto = normalizar(busqueda);
+  const porCategoriaYBusqueda = registros.filter(r =>
     (categoria === TODAS || r.categoria === categoria) &&
-    (institucion === TODAS || r.institucionId === institucion));
+    (texto === '' || normalizar(r.titulo).includes(texto)));
+  const visibles = porCategoriaYBusqueda.filter(r => institucion === TODAS || r.institucionId === institucion);
 
   function quitarFiltros() {
     setCategoria(TODAS);
     setInstitucion(TODAS);
+    setBusqueda('');
   }
 
   if (estado.cargando) return <p role="status">Consultando tus instituciones…</p>;
@@ -50,7 +64,7 @@ export default function Historial() {
   }
 
   const { instituciones, noDisponibles, datosSimulados } = estado.datos;
-  const filtrando = categoria !== TODAS || institucion !== TODAS;
+  const filtrando = categoria !== TODAS || institucion !== TODAS || texto !== '';
 
   return <section className="historial" aria-labelledby="historial-titulo">
     <p className="eyebrow">TU HISTORIAL CLÍNICO</p>
@@ -64,7 +78,22 @@ export default function Historial() {
       No pudimos consultar: {noDisponibles.map(i => i.nombre).join(', ')}. El resto de tu historial sí está actualizado.
     </p>}
 
+    {ultimoExamen && <article className="ultimo-examen" aria-labelledby="ultimo-examen-titulo">
+      <p className="eyebrow" id="ultimo-examen-titulo">TU ÚLTIMO EXAMEN</p>
+      <strong>{ultimoExamen.titulo}</strong>
+      <span><time dateTime={ultimoExamen.fecha}>{formatearFecha(ultimoExamen.fecha)}</time> · {ultimoExamen.institucionNombre}</span>
+      <span className="detalle">{ultimoExamen.detalle}</span>
+    </article>}
+
+    {registros.length > 0 && <GraficaInstituciones registros={porCategoriaYBusqueda}
+      instituciones={instituciones} seleccionada={institucion === TODAS ? null : institucion}
+      onSeleccionar={id => setInstitucion(id ?? TODAS)}/>}
+
     {registros.length > 0 && <div className="filtros">
+      <label className="buscador">Buscar por nombre
+        <input type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)}
+          placeholder="Por ejemplo, hemograma" autoComplete="off"/>
+      </label>
       <div className="chips" role="group" aria-label="Filtrar por categoría">
         <button type="button" className="chip" aria-pressed={categoria === TODAS} onClick={() => setCategoria(TODAS)}>Todos</button>
         {categorias.map(c => <button key={c.valor} type="button" className="chip"
