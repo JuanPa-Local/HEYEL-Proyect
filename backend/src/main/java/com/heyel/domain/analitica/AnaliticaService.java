@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-// Cuenta las visitas a la landing, los clics en «Crear mi cuenta» y las cuentas creadas.
+// Visitas a la landing / Clics en «Crear mi cuenta» y las cuentas creadas.
 @Service
 public class AnaliticaService {
 
