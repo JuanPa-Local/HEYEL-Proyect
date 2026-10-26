@@ -13,6 +13,7 @@ export default function Dashboard({ user, onLogout, error }) {
     <main className="app-main">
       {error && <p role="alert" className="message error">{error}</p>}
       <Historial/>
+            <p className="soporte">¿Tienes dudas o algo no te funciona? <a href="mailto:soporteheyel@gmail.com?subject=Soporte%20HEYEL">Escríbenos</a> y te respondemos.</p>
     </main>
   </div>;
 }
