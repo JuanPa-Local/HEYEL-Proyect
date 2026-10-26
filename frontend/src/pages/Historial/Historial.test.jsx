@@ -27,7 +27,7 @@ describe('Historial consolidado (US-03, US-05)', () => {
   it('muestra los registros de todas las instituciones en el orden recibido y avisa que son simulados', async () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
-    expect(await screen.findByText('Hemograma completo')).toBeTruthy();
+    await screen.findByRole('table');
     expect(filas()).toEqual(['Hemograma completo', 'Consulta de medicina general', 'Glicemia en ayunas']);
     expect(screen.getByText('3 registros de 2 instituciones')).toBeTruthy();
     expect(screen.getByText('Datos de demostración.')).toBeTruthy();
@@ -40,7 +40,7 @@ describe('Historial consolidado (US-03, US-05)', () => {
     render(<Historial/>);
     expect((await screen.findByRole('alert')).textContent).toContain('No pudimos completar la solicitud.');
     fireEvent.click(screen.getByRole('button', { name: 'Intentar de nuevo' }));
-    expect(await screen.findByText('Hemograma completo')).toBeTruthy();
+    await screen.findByRole('table');
   });
 
   it('formatea la fecha sin correrse de día', () => {
@@ -52,7 +52,7 @@ describe('Filtros del historial (US-04, US-05)', () => {
   it('filtra por categoría y solo ofrece las categorías que existen', async () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
-    await screen.findByText('Hemograma completo');
+    await screen.findByRole('table');
     const grupo = screen.getByRole('group', { name: 'Filtrar por categoría' });
     expect(within(grupo).queryByRole('button', { name: 'Imagenología' })).toBeNull();
     fireEvent.click(within(grupo).getByRole('button', { name: 'Laboratorio' }));
@@ -64,7 +64,7 @@ describe('Filtros del historial (US-04, US-05)', () => {
   it('filtra por institución', async () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
-    await screen.findByText('Hemograma completo');
+    await screen.findByRole('table');
     fireEvent.change(screen.getByLabelText('Institución'), { target: { value: ips.id } });
     expect(filas()).toEqual(['Consulta de medicina general', 'Glicemia en ayunas']);
   });
@@ -72,12 +72,47 @@ describe('Filtros del historial (US-04, US-05)', () => {
   it('combina filtros, avisa cuando no hay resultados y permite quitarlos', async () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
-    await screen.findByText('Hemograma completo');
+    await screen.findByRole('table');
     fireEvent.change(screen.getByLabelText('Institución'), { target: { value: lab.id } });
     fireEvent.click(screen.getByRole('button', { name: 'Consulta' }));
     expect(screen.getByText('No hay registros con estos filtros.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Quitar filtros' }));
     expect(filas()).toHaveLength(3);
     expect(screen.getByText('3 registros de 2 instituciones')).toBeTruthy();
+  });
+});
+describe('Updates del Release 2', () => {
+  it('muestra arriba el último examen de laboratorio y dónde se lo hicieron (H3)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    const tarjeta = await screen.findByRole('article', { name: 'TU ÚLTIMO EXAMEN' });
+    expect(within(tarjeta).getByText('Hemograma completo')).toBeTruthy();
+    expect(within(tarjeta).getByText(/Laboratorio Clínico Andino/)).toBeTruthy();
+  });
+
+  it('busca por nombre sin importar mayúsculas ni tildes y se combina con los filtros (H3)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    fireEvent.change(screen.getByLabelText('Buscar por nombre'), { target: { value: 'GLICEMIA' } });
+    expect(filas()).toEqual(['Glicemia en ayunas']);
+    expect(screen.getByText('Mostrando 1 de 3 registros')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: lab.id } });
+    expect(screen.getByText('No hay registros con estos filtros.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar filtros' }));
+    expect(screen.getByLabelText('Buscar por nombre').value).toBe('');
+    expect(filas()).toHaveLength(3);
+  });
+
+  it('la gráfica cuenta los registros por institución y filtra al tocar una', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    expect(screen.getByRole('img', { name: /IPS Salud Vital: 2 \(67 %\); Laboratorio Clínico Andino: 1 \(33 %\)/ })).toBeTruthy();
+    const leyenda = within(screen.getByRole('list'));
+    fireEvent.click(leyenda.getByRole('button', { name: /Laboratorio Clínico Andino/ }));
+    expect(filas()).toEqual(['Hemograma completo']);
+    fireEvent.click(leyenda.getByRole('button', { name: /Laboratorio Clínico Andino/ }));
+    expect(filas()).toHaveLength(3);
   });
 });
