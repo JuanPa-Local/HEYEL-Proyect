@@ -105,6 +105,7 @@ export default function Historial() {
           {instituciones.map(i => <option key={i.id} value={i.id}>{i.nombre}</option>)}
         </select>
       </label>
+      {filtrando && <button type="button" className="retry" onClick={quitarFiltros}>Quitar filtros</button>}
     </div>}
 
     <p className="resumen" aria-live="polite">
@@ -118,7 +119,6 @@ export default function Historial() {
       : visibles.length === 0
         ? <div className="vacio">
           <p>No hay registros con estos filtros.</p>
-          <button type="button" className="retry" onClick={quitarFiltros}>Quitar filtros</button>
         </div>
         : <table className="historial-tabla">
           <caption className="visually-hidden">Registros clínicos ordenados del más reciente al más antiguo</caption>
