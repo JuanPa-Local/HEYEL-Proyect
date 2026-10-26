@@ -95,3 +95,16 @@ describe('Registro según el ajuste de roadmap', () => {
     await waitFor(() => expect(onLogin).toHaveBeenCalledWith(user));
   });
 });
+
+describe('Registro con requisitos visibles (H1)', () => {
+  it('cuenta los caracteres que faltan y marca la casilla como obligatoria', async () => {
+    render(<AuthForm register onRegistered={vi.fn()}/>);
+    await screen.findByRole('checkbox');
+    expect(screen.getByText('Te faltan 12 caracteres para llegar a 12.')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'Una frase s' } });
+    expect(screen.getByText('Te falta 1 carácter para llegar a 12.')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'Una frase segura' } });
+    expect(screen.getByText(/ya tiene los 12 caracteres/)).toBeTruthy();
+    expect(screen.getByText('Obligatorio')).toBeTruthy();
+  });
+});
