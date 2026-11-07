@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { historialService } from '../../api/services/historialService';
+import { analiticaService } from '../../api/services/analiticaService';
 import GraficaInstituciones from './GraficaInstituciones';
 
 const formatoFecha = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -19,6 +20,29 @@ export default function Historial() {
   const [categoria, setCategoria] = useState(TODAS);
   const [institucion, setInstitucion] = useState(TODAS);
   const [busqueda, setBusqueda] = useState('');
+    // La activación se avisa una sola vez por visita; el servidor además la cuenta una sola vez por paciente.
+  const activacionAvisada = useRef(false);
+
+  function avisarActivacion() {
+    if (activacionAvisada.current) return;
+    activacionAvisada.current = true;
+    analiticaService.activacion();
+  }
+
+  function elegirCategoria(valor) {
+    if (valor !== TODAS) avisarActivacion();
+    setCategoria(valor);
+  }
+
+  function elegirInstitucion(valor) {
+    if (valor !== TODAS) avisarActivacion();
+    setInstitucion(valor);
+  }
+
+  function buscar(valor) {
+    if (valor.trim() !== '') avisarActivacion();
+    setBusqueda(valor);
+  }
 
   function cargar() {
     setEstado({ cargando: true, error: '', datos: null });
@@ -87,20 +111,20 @@ export default function Historial() {
 
     {registros.length > 0 && <GraficaInstituciones registros={porCategoriaYBusqueda}
       instituciones={instituciones} seleccionada={institucion === TODAS ? null : institucion}
-      onSeleccionar={id => setInstitucion(id ?? TODAS)}/>}
+      onSeleccionar={id => elegirInstitucion(id ?? TODAS)}/>}
 
     {registros.length > 0 && <div className="filtros">
       <label className="buscador">Buscar por nombre
-        <input type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)}
+        <input type="search" value={busqueda} onChange={e => buscar(e.target.value)}
           placeholder="Por ejemplo, hemograma" autoComplete="off"/>
       </label>
       <div className="chips" role="group" aria-label="Filtrar por categoría">
-        <button type="button" className="chip" aria-pressed={categoria === TODAS} onClick={() => setCategoria(TODAS)}>Todos</button>
+        <button type="button" className="chip" aria-pressed={categoria === TODAS} onClick={() => elegirCategoria(TODAS)}>Todos</button>
         {categorias.map(c => <button key={c.valor} type="button" className="chip"
-          aria-pressed={categoria === c.valor} onClick={() => setCategoria(c.valor)}>{c.etiqueta}</button>)}
+          aria-pressed={categoria === c.valor} onClick={() => elegirCategoria(c.valor)}>{c.etiqueta}</button>)}
       </div>
       <label className="filtro-institucion">Institución
-        <select value={institucion} onChange={e => setInstitucion(e.target.value)}>
+        <select value={institucion} onChange={e => elegirInstitucion(e.target.value)}>
           <option value={TODAS}>Todas las instituciones</option>
           {instituciones.map(i => <option key={i.id} value={i.id}>{i.nombre}</option>)}
         </select>

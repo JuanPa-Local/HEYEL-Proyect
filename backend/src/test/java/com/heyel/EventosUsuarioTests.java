@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mock.web.MockHttpSession;
 
 import java.time.LocalDateTime;
 
@@ -45,11 +46,12 @@ class EventosUsuarioTests {
             .andExpect(status().isCreated());
     }
 
-    private void iniciarSesion() throws Exception {
-        mvc.perform(post("/api/auth/login").with(csrf()).contentType("application/json").content("""
+    private MockHttpSession iniciarSesion() throws Exception {
+        return (MockHttpSession) mvc.perform(post("/api/auth/login").with(csrf()).contentType("application/json").content("""
                 {"email":"%s","password":"Una frase segura 123"}
                 """.formatted(CORREO)))
-            .andExpect(status().isOk());
+            .andExpect(status().isOk())
+            .andReturn().getRequest().getSession();
     }
 
     private long contar(TipoEventoUsuario tipo) {
@@ -77,5 +79,19 @@ class EventosUsuarioTests {
         iniciarSesion();
 
         assertEquals(1, contar(TipoEventoUsuario.REGRESO));
+    }
+    
+    @Test void laActivacionPideSesionYCuentaUnaSolaVez() throws Exception {
+        mvc.perform(post("/api/analitica/activacion").with(csrf()))
+            .andExpect(status().isUnauthorized());
+
+        registrar();
+        MockHttpSession sesion = iniciarSesion();
+        for (int i = 0; i < 2; i++) {
+            mvc.perform(post("/api/analitica/activacion").session(sesion).with(csrf()))
+                .andExpect(status().isNoContent());
+        }
+
+        assertEquals(1, contar(TipoEventoUsuario.ACTIVACION));
     }
 }

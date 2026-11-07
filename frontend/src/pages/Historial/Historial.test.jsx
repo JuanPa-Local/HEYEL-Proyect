@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import Historial, { formatearFecha } from './Historial';
 import { historialService } from '../../api/services/historialService';
+import { analiticaService } from '../../api/services/analiticaService';
 
 vi.mock('../../api/services/historialService', () => ({ historialService: { obtener: vi.fn() } }));
 afterEach(cleanup);
+vi.mock('../../api/services/analiticaService', () => ({ analiticaService: { activacion: vi.fn(), registrar: vi.fn() } }));
 
 const lab = { id: 'lab-1', nombre: 'Laboratorio Clínico Andino', tipo: 'Laboratorio' };
 const ips = { id: 'ips-1', nombre: 'IPS Salud Vital', tipo: 'IPS' };
@@ -114,5 +116,18 @@ describe('Updates del Release 2', () => {
     expect(filas()).toEqual(['Hemograma completo']);
     fireEvent.click(leyenda.getByRole('button', { name: /Laboratorio Clínico Andino/ }));
     expect(filas()).toHaveLength(3);
+  });
+});
+
+describe('Instrumentación del historial', () => {
+  it('avisa la activación una sola vez cuando el paciente usa un filtro o el buscador', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    expect(analiticaService.activacion).not.toHaveBeenCalled();
+    const grupo = screen.getByRole('group', { name: 'Filtrar por categoría' });
+    fireEvent.click(within(grupo).getByRole('button', { name: 'Laboratorio' }));
+    fireEvent.change(screen.getByLabelText('Buscar por nombre'), { target: { value: 'hemo' } });
+    expect(analiticaService.activacion).toHaveBeenCalledTimes(1);
   });
 });
