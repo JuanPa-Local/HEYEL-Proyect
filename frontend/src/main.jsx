@@ -4,6 +4,7 @@ import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Landing from './pages/Landing/Landing';
+import Panel from './pages/Panel/Panel';
 import { authService } from './api/services/authService';
 import Brand from './components/layout/Brand';
 import heyelMark from './assets/heyel-mark.png';
@@ -24,6 +25,8 @@ function App() {
     try { await authService.logout(); setUser(null); setError(''); location.hash = 'login'; }
     catch (err) { setError(err.message); }
   }
+  // El panel de analítica se puede ver con o sin sesión: no muestra datos personales.
+  if (page === '#panel') return <Panel/>;
   if (!loading && user) return <Dashboard user={user} onLogout={logout} error={error}/>;
   // Sin sesión y sin elegir login o registro, la raíz muestra la landing.
   if (!loading && !error && page !== '#login' && page !== '#registro') return <Landing/>;

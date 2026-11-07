@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:heyel-eventos;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
@@ -93,5 +95,19 @@ class EventosUsuarioTests {
         }
 
         assertEquals(1, contar(TipoEventoUsuario.ACTIVACION));
+    }
+    
+    @Test void elPanelEsPublicoYNoMuestraQuienEsElPaciente() throws Exception {
+        registrar();
+        MockHttpSession sesion = iniciarSesion();
+        mvc.perform(post("/api/analitica/activacion").session(sesion).with(csrf()))
+            .andExpect(status().isNoContent());
+
+        mvc.perform(get("/api/analitica/panel"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("registros").value(1))
+            .andExpect(jsonPath("activados").value(1))
+            .andExpect(jsonPath("ultimos.length()").value(2))
+            .andExpect(jsonPath("ultimos[0].pacienteId").doesNotExist());
     }
 }

@@ -51,4 +51,10 @@ public class AnaliticaController {
         eventosUsuario.activacion(UUID.fromString(auth.getName()));
         return ResponseEntity.noContent().build();
     }
+    
+    @GetMapping("/api/analitica/panel")
+    public EventosUsuarioService.Panel panel() {
+        Resumen resumen = service.resumen();
+        return eventosUsuario.panel(resumen.visitas(), resumen.clicsCrearCuenta());
+    }
 }
