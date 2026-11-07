@@ -1,0 +1,81 @@
+package com.heyel;
+
+import com.heyel.domain.analitica.EventoUsuarioRepository;
+import com.heyel.domain.analitica.TipoEventoUsuario;
+import com.heyel.domain.paciente.PacienteRepository;
+import com.heyel.domain.paciente.RegistrationTerms;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest(properties = {
+    "spring.datasource.url=jdbc:h2:mem:heyel-eventos;MODE=PostgreSQL;DB_CLOSE_DELAY=-1",
+    "spring.datasource.driver-class-name=org.h2.Driver",
+    "spring.jpa.hibernate.ddl-auto=create-drop",
+    "heyel.limite.login-fallidos-por-minuto=1000",
+    "heyel.limite.registros-por-hora=1000"
+})
+@AutoConfigureMockMvc
+class EventosUsuarioTests {
+    @Autowired MockMvc mvc;
+    @Autowired EventoUsuarioRepository eventos;
+    @Autowired PacienteRepository pacientes;
+
+    private static final String CORREO = "ana@example.com";
+
+    @BeforeEach void limpiar() {
+        eventos.deleteAll();
+        pacientes.deleteAll();
+    }
+
+    private void registrar() throws Exception {
+        mvc.perform(post("/api/auth/register").with(csrf()).contentType("application/json").content("""
+                {"fullName":"Ana Pérez","email":"%s","password":"Una frase segura 123","termsAccepted":true,"termsVersion":"%s"}
+                """.formatted(CORREO, RegistrationTerms.VERSION)))
+            .andExpect(status().isCreated());
+    }
+
+    private void iniciarSesion() throws Exception {
+        mvc.perform(post("/api/auth/login").with(csrf()).contentType("application/json").content("""
+                {"email":"%s","password":"Una frase segura 123"}
+                """.formatted(CORREO)))
+            .andExpect(status().isOk());
+    }
+
+    private long contar(TipoEventoUsuario tipo) {
+        return eventos.findAll().stream().filter(e -> e.getTipo() == tipo).count();
+    }
+
+    @Test void registrarseAnotaElEventoDeRegistro() throws Exception {
+        registrar();
+        assertEquals(1, contar(TipoEventoUsuario.REGISTRO));
+    }
+
+    @Test void entrarElMismoDiaDelRegistroNoEsRegreso() throws Exception {
+        registrar();
+        iniciarSesion();
+        assertEquals(0, contar(TipoEventoUsuario.REGRESO));
+    }
+
+    @Test void volverOtroDiaCuentaComoRegresoUnaSolaVezPorDia() throws Exception {
+        registrar();
+        var paciente = pacientes.findByEmail(CORREO).orElseThrow();
+        paciente.setCreatedAt(LocalDateTime.now().minusDays(2));
+        pacientes.save(paciente);
+
+        iniciarSesion();
+        iniciarSesion();
+
+        assertEquals(1, contar(TipoEventoUsuario.REGRESO));
+    }
+}

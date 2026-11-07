@@ -6,6 +6,7 @@ import com.heyel.domain.paciente.RegistrationTerms;
 import com.heyel.domain.paciente.exception.CredencialesInvalidasException;
 import com.heyel.presentation.dto.AuthDtos.*;
 import com.heyel.presentation.seguridad.LimiteDeIntentos;
+import com.heyel.domain.analitica.EventosUsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -27,10 +28,13 @@ public class AuthController {
     private final PacienteService service;
     private final SecurityContextRepository contexts;
     private final LimiteDeIntentos limite;
-    public AuthController(PacienteService service, SecurityContextRepository contexts, LimiteDeIntentos limite) {
+    private final EventosUsuarioService eventosUsuario;
+    public AuthController(PacienteService service, SecurityContextRepository contexts, LimiteDeIntentos limite,
+            EventosUsuarioService eventosUsuario) {
         this.service = service;
         this.contexts = contexts;
         this.limite = limite;
+        this.eventosUsuario = eventosUsuario;
     }
     @GetMapping("/api/auth/csrf")
     public Map<String, String> csrf(CsrfToken token) {
@@ -44,8 +48,9 @@ public class AuthController {
     @PostMapping({"/api/auth/register", "/api/pacientes/register"})
     public ResponseEntity<PatientResponse> register(@Valid @RequestBody RegisterRequest body, HttpServletRequest request) {
         limite.consumirRegistro(request.getRemoteAddr());
-        return ResponseEntity.status(201).body(PatientResponse.from(
-                service.register(body.fullName(), body.email(), body.password(), body.termsAccepted(), body.termsVersion())));
+        Paciente nuevo = service.register(body.fullName(), body.email(), body.password(), body.termsAccepted(), body.termsVersion());
+        eventosUsuario.registro(nuevo.getId());
+        return ResponseEntity.status(201).body(PatientResponse.from(nuevo));
     }
     @PostMapping({"/api/auth/login", "/api/pacientes/login"})
     public PatientResponse login(@Valid @RequestBody LoginRequest body,
@@ -60,6 +65,7 @@ public class AuthController {
             throw e;
         }
         limite.reiniciarLogin(ip, body.email());
+        eventosUsuario.inicioDeSesion(patient);
         // Rotate the session ID to prevent session fixation.
         request.getSession();
         request.changeSessionId();
