@@ -1,0 +1,51 @@
+package com.heyel.domain.analitica;
+
+import com.heyel.domain.paciente.Paciente;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+// Anota los eventos del embudo. El registro y el regreso los dispara el servidor;
+// la activación la avisa el frontend, pero aquí se asegura que cuente una sola vez.
+@Service
+public class EventosUsuarioService {
+
+    private final EventoUsuarioRepository eventos;
+
+    public EventosUsuarioService(EventoUsuarioRepository eventos) {
+        this.eventos = eventos;
+    }
+
+    @Transactional
+    public void registro(UUID pacienteId) {
+        eventos.save(new EventoUsuario(TipoEventoUsuario.REGISTRO, pacienteId, LocalDateTime.now()));
+    }
+
+    // Devuelve true solo la primera vez que el paciente se activa.
+    @Transactional
+    public boolean activacion(UUID pacienteId) {
+        if (eventos.existsByPacienteIdAndTipo(pacienteId, TipoEventoUsuario.ACTIVACION)) {
+            return false;
+        }
+        eventos.save(new EventoUsuario(TipoEventoUsuario.ACTIVACION, pacienteId, LocalDateTime.now()));
+        return true;
+    }
+
+    // Un inicio de sesión cuenta como regreso si es otro día distinto al del registro,
+    // y solo se anota una vez por día.
+    @Transactional
+    public void inicioDeSesion(Paciente paciente) {
+        LocalDate hoy = LocalDate.now();
+        if (!paciente.getCreatedAt().toLocalDate().isBefore(hoy)) {
+            return;
+        }
+        if (eventos.existsByPacienteIdAndTipoAndFechaGreaterThanEqual(
+                paciente.getId(), TipoEventoUsuario.REGRESO, hoy.atStartOfDay())) {
+            return;
+        }
+        eventos.save(new EventoUsuario(TipoEventoUsuario.REGRESO, paciente.getId(), LocalDateTime.now()));
+    }
+}
