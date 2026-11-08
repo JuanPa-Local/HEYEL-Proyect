@@ -144,6 +144,21 @@ describe('Updates del Release 2', () => {
   });
 });
 
+describe('Updates del Release 3', () => {
+  it('muestra los filtros activos y deja quitar cada uno con su X (H6)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    expect(screen.queryByRole('group', { name: 'Filtros activos' })).toBeNull();
+    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: ips.id } });
+    const activos = screen.getByRole('group', { name: 'Filtros activos' });
+    expect(within(activos).getByText(/IPS Salud Vital/)).toBeTruthy();
+    fireEvent.click(within(activos).getByRole('button', { name: 'Quitar filtro IPS Salud Vital' }));
+    expect(screen.queryByRole('group', { name: 'Filtros activos' })).toBeNull();
+    expect(filas()).toHaveLength(3);
+  });
+});
+
 describe('Instrumentación del historial', () => {
   it('avisa la activación una sola vez cuando el paciente usa un filtro o el buscador', async () => {
     historialService.obtener.mockResolvedValueOnce(datos);

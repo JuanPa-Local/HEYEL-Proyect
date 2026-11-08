@@ -137,6 +137,22 @@ export default function Historial() {
         onSeleccionar={id => elegirInstitucion(id ?? TODAS)}/>
     </details>}
 
+    {filtrando && <div className="filtros-activos" role="group" aria-label="Filtros activos">
+      <span>Mostrando:</span>
+      {categoria !== TODAS && <button type="button" className="filtro-activo" onClick={() => setCategoria(TODAS)}
+        aria-label={`Quitar filtro ${categorias.find(c => c.valor === categoria)?.etiqueta ?? categoria}`}>
+        {categorias.find(c => c.valor === categoria)?.etiqueta ?? categoria} <span aria-hidden="true">✕</span>
+      </button>}
+      {institucion !== TODAS && <button type="button" className="filtro-activo" onClick={() => setInstitucion(TODAS)}
+        aria-label={`Quitar filtro ${instituciones.find(i => i.id === institucion)?.nombre ?? institucion}`}>
+        {instituciones.find(i => i.id === institucion)?.nombre ?? institucion} <span aria-hidden="true">✕</span>
+      </button>}
+      {texto !== '' && <button type="button" className="filtro-activo" onClick={() => setBusqueda('')}
+        aria-label={`Quitar búsqueda ${busqueda}`}>
+        «{busqueda.trim()}» <span aria-hidden="true">✕</span>
+      </button>}
+    </div>}
+
     <p className="resumen" aria-live="polite">
       {filtrando
         ? `Mostrando ${visibles.length} de ${registros.length} registros`

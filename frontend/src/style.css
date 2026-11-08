@@ -32,3 +32,5 @@
 .grafica-plegable .grafica{margin-bottom:0}
 
 .ayuda-filtros{margin:0 0 12px;color:#183d39;font-size:14px;font-weight:600;line-height:1.5}
+
+.filtros-activos{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;font-size:14px;color:#183d39}.filtros-activos>span{font-weight:700}.filtro-activo{border:none;background:#193f36;color:#fff;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;cursor:pointer}.filtro-activo:hover,.filtro-activo:focus-visible{background:#2c5a4e}
