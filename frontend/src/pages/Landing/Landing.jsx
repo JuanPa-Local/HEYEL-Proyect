@@ -21,7 +21,11 @@ export default function Landing() {
   return <div className="landing">
     <header className="landing-header">
       <Brand/>
-      <a className="landing-entrar" href="#login">Iniciar sesión</a>
+      <nav className="landing-acceso" aria-label="Acceso">
+        <a className="landing-entrar" href="#login">Iniciar sesión</a>
+        <a className="landing-registrarme" href="#registro"
+          onClick={() => analiticaService.registrar('CLIC_CREAR_CUENTA')}>Crear cuenta</a>
+      </nav>
     </header>
 
     <main>
