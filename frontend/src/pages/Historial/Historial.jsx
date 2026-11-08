@@ -109,10 +109,6 @@ export default function Historial() {
       <span className="detalle">{ultimoExamen.detalle}</span>
     </article>}
 
-    {registros.length > 0 && <GraficaInstituciones registros={porCategoriaYBusqueda}
-      instituciones={instituciones} seleccionada={institucion === TODAS ? null : institucion}
-      onSeleccionar={id => elegirInstitucion(id ?? TODAS)}/>}
-
     {registros.length > 0 && <div className="filtros">
       <label className="buscador">Buscar por nombre
         <input type="search" value={busqueda} onChange={e => buscar(e.target.value)}
@@ -131,6 +127,13 @@ export default function Historial() {
       </label>
       {filtrando && <button type="button" className="retry" onClick={quitarFiltros}>Quitar filtros</button>}
     </div>}
+
+    {porCategoriaYBusqueda.length > 0 && <details className="grafica-plegable">
+      <summary>Ver gráfica por institución</summary>
+      <GraficaInstituciones registros={porCategoriaYBusqueda}
+        instituciones={instituciones} seleccionada={institucion === TODAS ? null : institucion}
+        onSeleccionar={id => elegirInstitucion(id ?? TODAS)}/>
+    </details>}
 
     <p className="resumen" aria-live="polite">
       {filtrando

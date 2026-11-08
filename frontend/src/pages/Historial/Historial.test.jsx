@@ -106,10 +106,26 @@ describe('Updates del Release 2', () => {
     expect(filas()).toHaveLength(3);
   });
 
+  it('muestra el último examen y los filtros encima de la gráfica plegable (H8)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    const tarjeta = screen.getByRole('article', { name: 'TU ÚLTIMO EXAMEN' });
+    const filtros = screen.getByRole('group', { name: 'Filtrar por categoría' }).closest('.filtros');
+    const desplegable = screen.getByText('Ver gráfica por institución').closest('details');
+    expect(desplegable.open).toBe(false);
+    expect(tarjeta.compareDocumentPosition(filtros) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(filtros.compareDocumentPosition(desplegable) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('la gráfica cuenta los registros por institución y filtra al tocar una', async () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
     await screen.findByRole('table');
+    const desplegable = screen.getByText('Ver gráfica por institución');
+    expect(desplegable.closest('details').open).toBe(false);
+    fireEvent.click(desplegable);
+    expect(desplegable.closest('details').open).toBe(true);
     expect(screen.getByRole('img', { name: /IPS Salud Vital: 2 \(67 %\); Laboratorio Clínico Andino: 1 \(33 %\)/ })).toBeTruthy();
     const leyenda = within(screen.getByRole('list'));
     fireEvent.click(leyenda.getByRole('button', { name: /Laboratorio Clínico Andino/ }));

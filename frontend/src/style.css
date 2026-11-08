@@ -23,3 +23,10 @@
 @media(max-width:760px){.landing-header{padding:16px 20px}.landing main{padding:28px 20px 16px}.landing-hero{grid-template-columns:1fr;gap:28px}.landing-hero h1{font-size:30px}.landing-propuesta{font-size:17px}.landing-pasos ol{grid-template-columns:1fr}.landing-cta{max-width:none}}
 .soporte{margin:40px 0 0;padding-top:20px;border-top:1px solid #d0daca;text-align:center;font-size:14px;color:#667b74}.soporte a{color:#133d38;font-weight:700}
 .panel h2{font-family:Georgia,serif;font-weight:400;font-size:24px;margin:32px 0 12px}.embudo{list-style:none;padding:0;margin:0;display:grid;gap:14px}.embudo-fila{display:flex;justify-content:space-between;font-size:15px}.embudo-fila strong{font-size:20px}.embudo-barra{height:12px;background:#e3eae4;border-radius:999px;overflow:hidden;margin-top:6px}.embudo-barra span{display:block;height:100%;background:#193f36;border-radius:999px}.embudo-paso{margin:4px 0 0;font-size:13px;color:#667b74}.eventos{list-style:none;padding:0;margin:0;display:grid;gap:8px}.eventos li{display:flex;justify-content:space-between;gap:12px;background:#fff;border:1px solid #d0daca;border-radius:10px;padding:10px 14px;font-size:14px}.eventos time{color:#667b74}
+
+.grafica-plegable{margin:0 0 24px}
+.grafica-plegable summary{cursor:pointer;border:1px solid #d0daca;border-radius:12px;padding:14px 20px;background:#fff;color:#193f36;font-size:15px;font-weight:600}
+.grafica-plegable summary:hover{background:#e8f0e9}
+.grafica-plegable summary:focus-visible{outline:2px solid #193f36;outline-offset:2px}
+.grafica-plegable[open] summary{margin-bottom:12px}
+.grafica-plegable .grafica{margin-bottom:0}
