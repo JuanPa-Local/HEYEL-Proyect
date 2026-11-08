@@ -63,6 +63,15 @@ describe('Filtros del historial (US-04, US-05)', () => {
     expect(screen.getByText('Mostrando 2 de 3 registros')).toBeTruthy();
   });
 
+  it('muestra la ayuda justo encima de los filtros (H9)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    const ayuda = screen.getByText('Toca una categoría o escoge una institución para filtrar tu historial.');
+    const filtros = screen.getByRole('group', { name: 'Filtrar por categoría' }).closest('.filtros');
+    expect(filtros.previousElementSibling).toBe(ayuda);
+  });
+
   it('filtra por institución', async () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);

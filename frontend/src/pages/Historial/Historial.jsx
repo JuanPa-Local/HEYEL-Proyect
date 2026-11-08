@@ -109,6 +109,8 @@ export default function Historial() {
       <span className="detalle">{ultimoExamen.detalle}</span>
     </article>}
 
+    {registros.length > 0 && <p className="ayuda-filtros">Toca una categoría o escoge una institución para filtrar tu historial.</p>}
+
     {registros.length > 0 && <div className="filtros">
       <label className="buscador">Buscar por nombre
         <input type="search" value={busqueda} onChange={e => buscar(e.target.value)}

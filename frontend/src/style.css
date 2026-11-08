@@ -30,3 +30,5 @@
 .grafica-plegable summary:focus-visible{outline:2px solid #193f36;outline-offset:2px}
 .grafica-plegable[open] summary{margin-bottom:12px}
 .grafica-plegable .grafica{margin-bottom:0}
+
+.ayuda-filtros{margin:0 0 12px;color:#183d39;font-size:14px;font-weight:600;line-height:1.5}
