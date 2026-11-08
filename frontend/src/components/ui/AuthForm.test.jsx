@@ -108,3 +108,18 @@ describe('Registro con requisitos visibles (H1)', () => {
     expect(screen.getByText('Obligatorio')).toBeTruthy();
   });
 });
+
+describe('Error visible al iniciar sesión (Release 3)', () => {
+  it('muestra el error arriba del formulario cuando el correo o la contraseña están mal', async () => {
+    const error = new Error('Correo o contraseña incorrectos.');
+    error.status = 401;
+    authService.login.mockRejectedValueOnce(error);
+    const { container } = render(<AuthForm onLogin={vi.fn()}/>);
+    fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'ana@example.com' } });
+    fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'clave equivocada' } });
+    fireEvent.submit(container.querySelector('form'));
+    const alerta = await screen.findByRole('alert');
+    expect(alerta.textContent).toBe('Correo o contraseña incorrectos. Revisa que estén bien escritos e inténtalo de nuevo.');
+    expect(container.querySelector('form').firstElementChild).toBe(alerta);
+  });
+});

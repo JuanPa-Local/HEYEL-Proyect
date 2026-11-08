@@ -14,6 +14,11 @@ export default function AuthForm({ register = false, onLogin, onRegistered }) {
   // Largo de la contraseña mientras se escribe, para mostrar cuánto falta (hallazgo H1).
   const [passwordLength, setPasswordLength] = useState(0);
   const termsCheckbox = useRef(null);
+  // El error se muestra arriba del formulario y se lleva a la vista, para que en celular no quede escondido.
+  const errorRef = useRef(null);
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+  }, [error]);
   const faltan = Math.max(0, MINIMO_CONTRASENA - passwordLength);
   async function loadTerms() {
     setTermsLoadError('');
@@ -53,12 +58,15 @@ export default function AuthForm({ register = false, onLogin, onRegistered }) {
         setTermsError(err.fields.termsAccepted || err.fields.termsVersion);
         termsCheckbox.current?.focus();
       } else {
-        setError(err instanceof TypeError ? 'No hay conexión con el servidor. Intenta nuevamente.' : err.message);
+        if (err instanceof TypeError) setError('No hay conexión con el servidor. Intenta nuevamente.');
+        else if (!register && err.status === 401) setError('Correo o contraseña incorrectos. Revisa que estén bien escritos e inténtalo de nuevo.');
+        else setError(err.message);
       }
     }
     finally { setPending(false); }
   }
   return <form onSubmit={submit}>
+  {error && <p ref={errorRef} role="alert" className="message error">{error}</p>}
     {register && <label>Nombre completo<input name="fullName" autoComplete="name" minLength={2} maxLength={100} required placeholder="Tu nombre y apellido"/></label>}
     <label>Correo electrónico<input name="email" type="email" autoComplete="email" maxLength={254} required placeholder="nombre@correo.com"/></label>
     <label>Contraseña<div className="password"><input name="password" type={visible ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'} minLength={register ? MINIMO_CONTRASENA : 1} maxLength={64} required aria-describedby={register ? 'password-help password-counter' : undefined} onChange={register ? event => setPasswordLength(event.target.value.length) : undefined}/><button type="button" className="reveal" aria-pressed={visible} onClick={() => setVisible(!visible)}><span aria-hidden="true">{visible ? '◉' : '◎'}</span>{' '}{visible ? 'Ocultar' : 'Mostrar'}</button></div></label>
@@ -77,7 +85,6 @@ export default function AuthForm({ register = false, onLogin, onRegistered }) {
         </> : termsLoadError ? <><p role="alert" className="message error">{termsLoadError}</p><button type="button" className="retry" onClick={loadTerms}>Volver a cargar las condiciones</button></> : <p role="status">Cargando condiciones de uso…</p>}
       </section>
     </>}
-    {error && <p role="alert" className="message error">{error}</p>}
     <button className="primary" disabled={pending || (register && !terms)}>{pending ? 'Un momento…' : register ? 'Registrarme' : 'Iniciar sesión'} <span aria-hidden="true">↗</span></button>
   </form>;
 }
