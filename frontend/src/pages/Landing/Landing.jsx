@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Brand from '../../components/layout/Brand';
 import { analiticaService } from '../../api/services/analiticaService';
-import captura from '../../assets/captura-historial.png';
+import recorrido from '../../assets/recorrido-heyel.gif';
 
 // Una visita por pestaña: recargar la landing no la vuelve a contar.
 function contarVisita() {
@@ -40,8 +40,8 @@ export default function Landing() {
           </a>
           <p className="hint">Prototipo: las instituciones y los registros son de demostración. Todavía no se conecta con EPS reales.</p>
         </div>
-        <img className="landing-captura" src={captura} width="1280" height="900"
-          alt="Pantalla real de HEYEL con el último examen, la gráfica por institución y el historial"/>
+        <img className="landing-captura" src={recorrido} width="960" height="600"
+          alt="Recorrido por la app real de HEYEL: crear la cuenta, ver el último examen, filtrar el historial, ver la gráfica por institución y abrir el recorrido guiado"/>
       </section>
 
       <section className="landing-pasos" aria-labelledby="pasos-titulo">
