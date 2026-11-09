@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { historialService } from '../../api/services/historialService';
 import { analiticaService } from '../../api/services/analiticaService';
 import GraficaInstituciones from './GraficaInstituciones';
+import Recorrido from '../../components/ui/Recorrido';
 
 const formatoFecha = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 const TODAS = 'TODAS';
@@ -20,6 +21,7 @@ export default function Historial() {
   const [categoria, setCategoria] = useState(TODAS);
   const [institucion, setInstitucion] = useState(TODAS);
   const [busqueda, setBusqueda] = useState('');
+  const [recorrido, setRecorrido] = useState(false);
     // La activación se avisa una sola vez por visita; el servidor además la cuenta una sola vez por paciente.
   const activacionAvisada = useRef(false);
 
@@ -94,6 +96,10 @@ export default function Historial() {
     <p className="eyebrow">TU HISTORIAL CLÍNICO</p>
     <h1 id="historial-titulo">Todo tu historial, en un solo lugar.</h1>
     <p className="intro">Reunimos lo que tus instituciones de salud tienen registrado sobre ti, del más reciente al más antiguo.</p>
+    {registros.length > 0 && <button type="button" className="boton-recorrido" onClick={() => setRecorrido(true)}>
+      ¿Primera vez aquí? Ver recorrido guiado
+    </button>}
+    {recorrido && <Recorrido onCerrar={() => setRecorrido(false)}/>}
 
     {datosSimulados && <p className="message demo">
       <strong>Datos de demostración.</strong> Las instituciones y los registros de este prototipo son ficticios.

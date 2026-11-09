@@ -1,6 +1,8 @@
-// Gráfica de pie con la cantidad de registros que aporta cada institución.
-// Se dibuja con SVG propio, sin librerías. Tocar una porción o su fila de la leyenda
-// filtra el historial por esa institución; tocarla de nuevo quita el filtro.
+import { useState } from 'react';
+
+// Gráfica con la cantidad de registros que aporta cada institución, en torta o en barras.
+// Se dibuja con SVG y CSS propios, sin librerías. Tocar una porción, una barra o su fila de la
+// leyenda filtra el historial por esa institución; tocarla de nuevo quita el filtro.
 
 const COLORES = ['#193f36', '#4f8a6e', '#c48a2c', '#5b7fa6', '#9a5b7a', '#7a8a3a'];
 const RADIO = 80;
@@ -30,6 +32,7 @@ export function contarPorInstitucion(registros, instituciones) {
 }
 
 export default function GraficaInstituciones({ registros, instituciones, seleccionada, onSeleccionar }) {
+  const [vista, setVista] = useState('torta');
   const datos = contarPorInstitucion(registros, instituciones);
   const total = datos.reduce((suma, dato) => suma + dato.cantidad, 0);
   if (total === 0) return null;
@@ -47,11 +50,27 @@ export default function GraficaInstituciones({ registros, instituciones, selecci
   }
 
   const descripcion = porciones.map(p => `${p.nombre}: ${p.cantidad} (${p.porcentaje} %)`).join('; ');
+  const mayor = Math.max(...porciones.map(p => p.cantidad));
 
   return <section className="grafica" aria-labelledby="grafica-titulo">
     <h2 id="grafica-titulo">¿Quién tiene tu información?</h2>
     <p className="hint">Registros por institución. Toca una para ver solo sus registros.</p>
-    <div className="grafica-cuerpo">
+    <div className="grafica-vistas" role="group" aria-label="Tipo de gráfica">
+      <button type="button" aria-pressed={vista === 'torta'} onClick={() => setVista('torta')}>Torta</button>
+      <button type="button" aria-pressed={vista === 'barras'} onClick={() => setVista('barras')}>Barras</button>
+    </div>
+    {vista === 'barras' ? <ul className="barras" aria-label={`Registros por institución. ${descripcion}`}>
+      {porciones.map(p => <li key={p.id}>
+        <button type="button" aria-pressed={seleccionada === p.id} onClick={() => elegir(p.id)}
+          className={seleccionada && seleccionada !== p.id ? 'barra-apagada' : undefined}>
+          <span className="barra-nombre">{p.nombre}</span>
+          <span className="barra-pista" aria-hidden="true">
+            <span className="barra-relleno" style={{ width: `${(p.cantidad / mayor) * 100}%`, background: p.color }}/>
+          </span>
+          <span className="leyenda-dato">{p.cantidad} · {p.porcentaje} %</span>
+        </button>
+      </li>)}
+    </ul> : <div className="grafica-cuerpo">
       <svg viewBox="0 0 200 200" role="img" aria-label={`Registros por institución. ${descripcion}`}>
         {porciones.length === 1
           ? <circle cx={CENTRO} cy={CENTRO} r={RADIO} fill={porciones[0].color}
@@ -70,6 +89,6 @@ export default function GraficaInstituciones({ registros, instituciones, selecci
           </button>
         </li>)}
       </ul>
-    </div>
+    </div>}
   </section>;
 }
