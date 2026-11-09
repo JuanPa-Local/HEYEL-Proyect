@@ -173,6 +173,23 @@ describe('Updates del Release 3', () => {
     expect(screen.getByRole('img', { name: /Registros por institución/ })).toBeTruthy();
   });
 
+  it('abre el recorrido guiado paso a paso sin cambiar los filtros', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '¿Primera vez aquí? Ver recorrido guiado' }));
+    const recorrido = within(screen.getByRole('dialog', { name: 'Tu último examen' }));
+    expect(recorrido.getByText('Paso 1 de 4')).toBeTruthy();
+    expect(document.querySelector('.ultimo-examen').classList.contains('recorrido-foco')).toBe(true);
+    fireEvent.click(recorrido.getByRole('button', { name: 'Siguiente' }));
+    expect(screen.getByRole('dialog', { name: 'Busca y filtra' })).toBeTruthy();
+    expect(document.querySelector('.ultimo-examen').classList.contains('recorrido-foco')).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Salir' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(filas()).toHaveLength(3);
+    expect(analiticaService.activacion).not.toHaveBeenCalled();
+  });
 });
 
 describe('Instrumentación del historial', () => {
