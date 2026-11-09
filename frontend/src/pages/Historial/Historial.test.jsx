@@ -157,6 +157,22 @@ describe('Updates del Release 3', () => {
     expect(screen.queryByRole('group', { name: 'Filtros activos' })).toBeNull();
     expect(filas()).toHaveLength(3);
   });
+
+  it('la gráfica también se puede ver en barras y filtra al tocar una barra', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    fireEvent.click(screen.getByText('Ver gráfica por institución'));
+    fireEvent.click(screen.getByRole('button', { name: 'Barras' }));
+    expect(screen.getByRole('button', { name: 'Barras' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByRole('img', { name: /Registros por institución/ })).toBeNull();
+    const barras = within(screen.getByRole('list', { name: /IPS Salud Vital: 2 \(67 %\)/ }));
+    fireEvent.click(barras.getByRole('button', { name: /IPS Salud Vital/ }));
+    expect(filas()).toEqual(['Consulta de medicina general', 'Glicemia en ayunas']);
+    fireEvent.click(screen.getByRole('button', { name: 'Torta' }));
+    expect(screen.getByRole('img', { name: /Registros por institución/ })).toBeTruthy();
+  });
+
 });
 
 describe('Instrumentación del historial', () => {
