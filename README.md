@@ -3,9 +3,29 @@
 HEYEL reúne en un solo lugar el historial clínico que un paciente tiene repartido en distintas instituciones de salud. El paciente crea su cuenta, entra y ve sus exámenes, imágenes y consultas ordenados del más reciente al más antiguo, con filtros por categoría e institución. Es el proyecto del curso Proyecto de Innovación en TI (Pontificia Universidad Javeriana).
 
 - **App desplegada y landing:** https://heyel.onrender.com (sin sesión, la raíz muestra la landing; «Crear mi cuenta» lleva al registro)
-- **Versión:** Release 2 (`v0.2`)
+- **Panel de analítica en vivo:** https://heyel.onrender.com/#panel
+- **Versión:** Release 3 (`v0.3`)
 
 > La app está en el plan gratuito de Render. Si nadie la ha usado en un rato, la primera carga puede tardar uno o dos minutos mientras el servidor arranca. Abran la URL unos minutos antes de una demo o de una prueba con usuarios.
+
+## Qué cambió en la versión v0.3
+
+Los cambios salen de la validación del Release 2 con 5 usuarios (hallazgos H6 a H9), de la retroalimentación de la monitora y de la instrumentación que pide el release.
+
+| Update | Origen | Cómo se comprueba en la URL |
+| --- | --- | --- |
+| Eventos de registro, activación y regreso, con panel en vivo | Requisito del release | `/#panel` muestra el embudo, la etapa con mayor abandono y los últimos eventos, y se actualiza cada 10 segundos |
+| Filtros activos con X | Hallazgo H6 | Al filtrar aparece «Mostrando:» con un botón por filtro; la X quita solo ese filtro |
+| Botón «Crear cuenta» visible | Hallazgo H7 | Botón amarillo en el encabezado de la landing y «Crear una cuenta nueva» en el inicio de sesión |
+| Gráfica plegable y filtros arriba | Hallazgo H8 | La gráfica empieza cerrada y los filtros quedan debajo de la tarjeta del último examen |
+| Ayuda visible sobre los filtros | Hallazgo H9 | Encima de los filtros se lee cómo filtrar |
+| Error de inicio de sesión visible | Monitora | Con datos incorrectos el error sale arriba del formulario |
+| Soporte con correo para copiar | Monitora | Al final del historial, «Copiar correo» copia soporteheyel@gmail.com |
+| Colores más vivos y tonos fríos | Monitora | Etiquetas de categoría en azul, naranja y verde; fondos claros sin tonos crema |
+| Gráfica en torta o en barras | Monitora | En «Ver gráfica por institución», los botones «Torta» y «Barras» cambian el tipo de gráfica; las dos filtran al tocar una institución |
+| Recorrido guiado | Monitora | «¿Primera vez aquí? Ver recorrido guiado» explica paso a paso la tarjeta, los filtros, la gráfica, el historial y el soporte |
+| Recorrido animado en la landing | Monitora | La landing muestra un GIF grabado sobre la app real |
+| Mensaje claro si el servidor está arrancando | Corrección | Si Render responde una página en vez de datos, la app dice que no pudo conectar en lugar de mostrar un error técnico |
 
 ## Qué cambió en la versión v0.2
 
@@ -122,7 +142,7 @@ Vite reenvía `/api` a `127.0.0.1:8080` para que la cookie de sesión y el token
 La app publicada corre en el plan gratuito de Render:
 
 - **Web Service (Docker):** usa el [`Dockerfile`](Dockerfile) de la raíz. Compila el frontend con Node, lo copia como archivos estáticos dentro del backend y empaqueta todo en un solo `.jar`, así que frontend y API quedan en la misma URL.
-- **PostgreSQL:** base gratuita de Render en la misma región del servicio. Vence el 10 de noviembre de 2026.
+- **PostgreSQL:** base gratuita de Render en la misma región del servicio. Se migró el 8 de noviembre de 2026 y vence el 8 de diciembre de 2026.
 - **Variables configuradas:** `DB_URL` (con el hostname interno de la base), `DB_USER`, `DB_PASSWORD` y `COOKIE_SECURE=true`.
 
 Para publicar cambios hay que entrar al servicio en Render y usar Manual Deploy → Deploy latest commit, porque el servicio está conectado como repositorio público y no se despliega solo con cada push.
@@ -167,6 +187,8 @@ render.yaml Blueprint de Render
 | GET | `/api/historial` | Historial consolidado del paciente con sesión activa |
 | POST | `/api/analitica/eventos` | Cuenta una visita a la landing (`VISITA_LANDING`) o un clic en «Crear mi cuenta» (`CLIC_CREAR_CUENTA`) |
 | GET | `/api/analitica/resumen` | Totales de visitas, clics y cuentas creadas |
+| POST | `/api/analitica/activacion` | Anota la activación del paciente con sesión la primera vez que usa un filtro, el buscador o la gráfica |
+| GET | `/api/analitica/panel` | Embudo (visitas, clics, registros, activados, regresaron) y los últimos 20 eventos, sin datos personales |
 
 ## Límites conocidos
 
