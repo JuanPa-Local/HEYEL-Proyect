@@ -1,3 +1,5 @@
+import { enValidacion } from '../validacion/sesion';
+
 const SIN_SERVIDOR = 'No pudimos conectar con el servidor. Intenta de nuevo en un momento.';
 
 // Mientras el servidor arranca, Render responde una página HTML en vez de JSON.
@@ -8,8 +10,10 @@ async function leerJson(response) {
   catch { return undefined; }
 }
 
-export async function request(path, { method = 'GET', body } = {}) {
-  const headers = {};
+export async function request(path, { method = 'GET', body, headers: extra = {} } = {}) {
+  const headers = { ...extra };
+  // En una sesión de validación el servidor no suma estas acciones al embudo de visitantes reales.
+  if (enValidacion()) headers['X-Heyel-Validacion'] = 'true';
   if (method !== 'GET') {
     const response = await fetch('/api/auth/csrf', { credentials: 'same-origin' });
     if (!response.ok) throw new Error('No pudimos preparar la sesión. Intenta de nuevo.');

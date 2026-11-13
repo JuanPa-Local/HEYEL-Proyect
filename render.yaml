@@ -31,3 +31,6 @@ services:
           property: password
       - key: COOKIE_SECURE
         value: "true"
+      # Clave del equipo para ver los resultados de validación; se escribe a mano en Render.
+      - key: VALIDACION_CLAVE
+        sync: false

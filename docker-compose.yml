@@ -23,6 +23,8 @@ services:
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       COOKIE_SECURE: "false"
+      # Clave para ver los resultados de las sesiones de validación en #validacion/resultados.
+      VALIDACION_CLAVE: ${VALIDACION_CLAVE:-}
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:

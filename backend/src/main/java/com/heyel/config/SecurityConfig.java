@@ -24,7 +24,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/csrf", "/api/auth/terms", "/api/auth/register", "/api/auth/login",
                         "/api/pacientes/register", "/api/pacientes/login",
-                        "/api/analitica/eventos", "/api/analitica/resumen", "/api/analitica/panel").permitAll()
+                        "/api/analitica/eventos", "/api/analitica/resumen", "/api/analitica/panel",
+                        "/api/validacion/sesiones").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll())
             .formLogin(AbstractHttpConfigurer::disable)

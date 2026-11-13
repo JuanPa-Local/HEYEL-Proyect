@@ -49,7 +49,7 @@ public class AuthController {
     public ResponseEntity<PatientResponse> register(@Valid @RequestBody RegisterRequest body, HttpServletRequest request) {
         limite.consumirRegistro(request.getRemoteAddr());
         Paciente nuevo = service.register(body.fullName(), body.email(), body.password(), body.termsAccepted(), body.termsVersion());
-        eventosUsuario.registro(nuevo.getId());
+        if (!ModoValidacion.activo(request)) eventosUsuario.registro(nuevo.getId());
         return ResponseEntity.status(201).body(PatientResponse.from(nuevo));
     }
     @PostMapping({"/api/auth/login", "/api/pacientes/login"})
@@ -65,7 +65,7 @@ public class AuthController {
             throw e;
         }
         limite.reiniciarLogin(ip, body.email());
-        eventosUsuario.inicioDeSesion(patient);
+        if (!ModoValidacion.activo(request)) eventosUsuario.inicioDeSesion(patient);
         // Rotate the session ID to prevent session fixation.
         request.getSession();
         request.changeSessionId();

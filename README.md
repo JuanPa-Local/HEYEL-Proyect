@@ -27,6 +27,20 @@ Los cambios salen de la validación del Release 2 con 5 usuarios (hallazgos H6 a
 | Recorrido animado en la landing | Monitora | La landing muestra un GIF grabado sobre la app real |
 | Mensaje claro si el servidor está arrancando | Corrección | Si Render responde una página en vez de datos, la app dice que no pudo conectar en lugar de mostrar un error técnico |
 
+## Modo validación (sesiones con usuarios)
+
+`https://heyel.onrender.com/#validacion` guía una sesión de validación desde el celular del equipo. No aparece en la landing.
+
+1. El facilitador escribe el código (VF-01…), el perfil, si la persona probó una versión anterior y quién facilita y observa. Lee el consentimiento en voz alta y marca la casilla.
+2. Al tocar «Empezar las tareas» la app vuelve a la landing sin sesión y el celular pasa al participante.
+3. Una barra abajo muestra cada tarea (T1 a T5, las mismas del R1 y el R2) y toma el tiempo desde «Empezar tarea». T1, T2, T4 y T5 se cierran solas cuando la persona lo logra; T3 se cierra con «Terminé». El observador marca «Pidió ayuda» o «No pudo».
+4. La persona responde el SUS (10 afirmaciones de 1 a 5) y deja su reseña: estrellas, lo más difícil, qué cambiaría y si recomendaría HEYEL.
+5. La sesión se guarda en el servidor y en el celular. El resumen deja descargar el CSV de esa sesión o de todas las sesiones de ese celular (separado por `;`, listo para Excel).
+
+`#validacion/resultados` muestra los promedios por tarea y el SUS comparados con el R1 y el R2, y descarga el CSV de todas las sesiones. Pide la clave del equipo, que se configura en Render con la variable `VALIDACION_CLAVE`; sin esa variable los resultados quedan desactivados.
+
+Las cuentas, visitas y eventos de una sesión de validación no suman al embudo de `/#panel`. Las sesiones no guardan nombre ni correo del participante.
+
 ## Qué cambió en la versión v0.2
 
 Los cambios salen de la validación del Release 1 con 6 usuarios (hallazgos H1 a H3) y de una solicitud del equipo.
@@ -135,7 +149,8 @@ Vite reenvía `/api` a `127.0.0.1:8080` para que la cookie de sesión y el token
 | `DATABASE_URL` | Solo en Render con Blueprint: `postgres://...`; el contenedor la convierte en `DB_URL` al arrancar |
 | `HEYEL_LIMITE_LOGIN_FALLIDOS_POR_MINUTO` | `5` intentos fallidos por correo e IP; después responde 429 |
 | `HEYEL_LIMITE_REGISTROS_POR_HORA` | `10` registros por IP; súbelo si varios usuarios se registran desde la misma red en una sesión de validación |
-| `HEYEL_LIMITE_EVENTOS_POR_HORA` | `60` eventos de analítica de la landing por IP, para que nadie infle las visitas |
+| `HEYEL_LIMITE_EVENTOS_POR_HORA` | `60` eventos de analítica de la landing y sesiones de validación por IP, para que nadie infle las visitas |
+| `VALIDACION_CLAVE` | Vacía: los resultados de `#validacion/resultados` quedan desactivados. Con valor, es la clave del equipo para verlos |
 
 ## Despliegue en Render
 
@@ -188,6 +203,8 @@ render.yaml Blueprint de Render
 | POST | `/api/analitica/eventos` | Cuenta una visita a la landing (`VISITA_LANDING`) o un clic en «Crear mi cuenta» (`CLIC_CREAR_CUENTA`) |
 | GET | `/api/analitica/resumen` | Totales de visitas, clics y cuentas creadas |
 | POST | `/api/analitica/activacion` | Anota la activación del paciente con sesión la primera vez que usa un filtro, el buscador o la gráfica |
+| POST | `/api/validacion/sesiones` | Guarda una sesión de validación: tiempos por tarea, ayuda, SUS y reseña. Calcula el SUS en el servidor |
+| GET | `/api/validacion/sesiones` | Sesiones guardadas; pide el encabezado `X-Clave-Equipo` |
 | GET | `/api/analitica/panel` | Embudo (visitas, clics, registros, activados, regresaron) y los últimos 20 eventos, sin datos personales |
 
 ## Límites conocidos

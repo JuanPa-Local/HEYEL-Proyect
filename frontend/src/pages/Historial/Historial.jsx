@@ -3,6 +3,7 @@ import { historialService } from '../../api/services/historialService';
 import { analiticaService } from '../../api/services/analiticaService';
 import GraficaInstituciones from './GraficaInstituciones';
 import Recorrido from '../../components/ui/Recorrido';
+import { avisarLogro } from '../../validacion/sesion';
 
 const formatoFecha = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 const TODAS = 'TODAS';
@@ -38,6 +39,7 @@ export default function Historial() {
 
   function elegirInstitucion(valor) {
     if (valor !== TODAS) avisarActivacion();
+    avisarLogro('filtro-institucion', valor);
     setInstitucion(valor);
   }
 
