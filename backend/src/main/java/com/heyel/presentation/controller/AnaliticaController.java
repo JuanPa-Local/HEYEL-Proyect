@@ -35,7 +35,7 @@ public class AnaliticaController {
     @PostMapping("/api/analitica/eventos")
     public ResponseEntity<Void> registrar(@Valid @RequestBody EventoRequest body, HttpServletRequest request) {
         limite.consumirEvento(request.getRemoteAddr());
-        service.registrar(body.tipo());
+        if (!ModoValidacion.activo(request)) service.registrar(body.tipo());
         return ResponseEntity.noContent().build();
     }
 
@@ -47,8 +47,8 @@ public class AnaliticaController {
     // El paciente usó por primera vez un filtro, el buscador o la gráfica. Pide sesión iniciada
     // y el servicio se asegura de contarlo una sola vez por paciente.
     @PostMapping("/api/analitica/activacion")
-    public ResponseEntity<Void> activacion(Authentication auth) {
-        eventosUsuario.activacion(UUID.fromString(auth.getName()));
+    public ResponseEntity<Void> activacion(Authentication auth, HttpServletRequest request) {
+        if (!ModoValidacion.activo(request)) eventosUsuario.activacion(UUID.fromString(auth.getName()));
         return ResponseEntity.noContent().build();
     }
     
