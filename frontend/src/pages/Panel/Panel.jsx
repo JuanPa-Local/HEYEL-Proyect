@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Brand from '../../components/layout/Brand';
 import { analiticaService } from '../../api/services/analiticaService';
+import PanelValidacion from './PanelValidacion';
 
 const CADA_CUANTO_MS = 10000;
 
@@ -55,7 +56,7 @@ export default function Panel() {
   const peor = datos ? mayorAbandono(embudo) : null;
 
   return <div className="app">
-    <header className="app-header"><Brand/><a className="logout" href="#">Ir a HEYEL</a></header>
+    <header className="app-header"><Brand /><a className="logout" href="#">Ir a HEYEL</a></header>
     <main className="app-main panel">
       <p className="eyebrow">ANALÍTICA EN VIVO</p>
       <h1>Panel de HEYEL</h1>
@@ -72,7 +73,7 @@ export default function Panel() {
               <span>{p.nombre}</span>
               <strong>{p.valor}</strong>
             </div>
-            <div className="embudo-barra" aria-hidden="true"><span style={{ width: `${(p.valor / maximo) * 100}%` }}/></div>
+            <div className="embudo-barra" aria-hidden="true"><span style={{ width: `${(p.valor / maximo) * 100}%` }} /></div>
             {p.pasaDelAnterior !== null && <p className="embudo-paso">{p.pasaDelAnterior} % del paso anterior</p>}
           </li>)}
         </ol>
@@ -91,6 +92,7 @@ export default function Panel() {
             </li>)}
           </ul>}
       </>}
+      <PanelValidacion />
     </main>
   </div>;
 }

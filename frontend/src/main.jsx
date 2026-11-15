@@ -7,8 +7,14 @@ import Landing from './pages/Landing/Landing';
 import Panel from './pages/Panel/Panel';
 import { authService } from './api/services/authService';
 import Brand from './components/layout/Brand';
+import PruebaGuiada from './components/ui/PruebaGuiada';
 import heyelMark from './assets/heyel-mark.png';
 import './style.css';
+import './validacion.css';
+
+// Avisa a la prueba guiada qué hizo la persona (registro, login, logout).
+const emitir = tipo => window.dispatchEvent(new CustomEvent('heyel:auth', { detail: tipo }));
+
 function App() {
   const [page, setPage] = useState(location.hash);
   const [user, setUser] = useState(null);
@@ -21,8 +27,14 @@ function App() {
     authService.me().then(setUser).catch(err => { if (err.status !== 401) setError('No pudimos conectar con el servidor. Recarga la página para intentar de nuevo.'); }).finally(() => setLoading(false));
     return () => window.removeEventListener('hashchange', change);
   }, []);
+  // La prueba guiada empieza siempre sin sesión y desde la landing.
+  useEffect(() => {
+    const reiniciar = () => { setUser(null); setError(''); setNotice(''); location.hash = ''; setPage(''); };
+    window.addEventListener('heyel:reiniciar', reiniciar);
+    return () => window.removeEventListener('heyel:reiniciar', reiniciar);
+  }, []);
   async function logout() {
-    try { await authService.logout(); setUser(null); setError(''); location.hash = 'login'; }
+    try { await authService.logout(); setUser(null); setError(''); location.hash = 'login'; emitir('logout'); }
     catch (err) { setError(err.message); }
   }
   // El panel de analítica se puede ver con o sin sesión: no muestra datos personales.
@@ -30,6 +42,6 @@ function App() {
   if (!loading && user) return <Dashboard user={user} onLogout={logout} error={error}/>;
   // Sin sesión y sin elegir login o registro, la raíz muestra la landing.
   if (!loading && !error && page !== '#login' && page !== '#registro') return <Landing/>;
-  return <main className="shell"><aside className="story"><Brand/><div className="story-copy"><span className="pill">CONTIGO, EN CADA PASO</span><h2>Cuidarte empieza<br/>por conocerte.</h2><p>El primer paso es crear tu cuenta.</p><div className="orbit" aria-hidden="true"><img src={heyelMark} alt="" width="190" height="190"/></div></div></aside><section className="content"><div className="form-wrap">{loading ? <p role="status">Preparando tu espacio…</p> : <>{error && <p role="alert" className="message error">{error}</p>}{page === '#registro' ? <Register onRegistered={u => { if (u) { setUser(u); setError(''); return; } setNotice('Tu cuenta está lista. Inicia sesión para continuar.'); location.hash = 'login'; setPage('#login'); }}/> : <Login notice={notice} onLogin={u => { setUser(u); setError(''); }}/>}</>}</div><footer>HEYEL · Un paso más cerca de tu bienestar.</footer></section></main>;
+  return <main className="shell"><aside className="story"><Brand/><div className="story-copy"><span className="pill">CONTIGO, EN CADA PASO</span><h2>Cuidarte empieza<br/>por conocerte.</h2><p>El primer paso es crear tu cuenta.</p><div className="orbit" aria-hidden="true"><img src={heyelMark} alt="" width="190" height="190"/></div></div></aside><section className="content"><div className="form-wrap">{loading ? <p role="status">Preparando tu espacio…</p> : <>{error && <p role="alert" className="message error">{error}</p>}{page === '#registro' ? <Register onRegistered={u => { emitir('registro'); if (u) { setUser(u); setError(''); return; } setNotice('Tu cuenta está lista. Inicia sesión para continuar.'); location.hash = 'login'; setPage('#login'); }}/> : <Login notice={notice} onLogin={u => { setUser(u); setError(''); emitir('login'); }}/>}</>}</div><footer>HEYEL · Un paso más cerca de tu bienestar.</footer></section></main>;
 }
-createRoot(document.getElementById('root')).render(<App/>);
+createRoot(document.getElementById('root')).render(<><App/><PruebaGuiada/></>);

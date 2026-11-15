@@ -13,36 +13,49 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 public class SecurityConfig {
-    @Bean public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
-    @Bean public SecurityContextRepository securityContextRepository() {
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
         return new HttpSessionSecurityContextRepository();
     }
-    @Bean public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-            .securityContext(context -> context.securityContextRepository(securityContextRepository()))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/csrf", "/api/auth/terms", "/api/auth/register", "/api/auth/login",
-                        "/api/pacientes/register", "/api/pacientes/login",
-                        "/api/analitica/eventos", "/api/analitica/resumen", "/api/analitica/panel").permitAll()
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll())
-            .formLogin(AbstractHttpConfigurer::disable)
-            .httpBasic(AbstractHttpConfigurer::disable)
-            .exceptionHandling(errors -> errors
-                .authenticationEntryPoint((request, response, exception) -> {
-                    response.setStatus(401);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Inicia sesión para continuar.\"}");
-                })
-                .accessDeniedHandler((request, response, exception) -> {
-                    response.setStatus(403);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Solicitud no autorizada. Actualiza la página.\"}");
-                }))
-            .logout(logout -> logout.logoutUrl("/api/auth/logout")
-                .invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID")
-                .logoutSuccessHandler((request, response, authentication) -> response.setStatus(204)));
+                // /api/validacion/** es anónimo y solo guarda códigos de sesión aleatorios: no
+                // usa CSRF
+                // para que los eventos lleguen aunque la persona cierre la pestaña.
+                .csrf(csrf -> csrf.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                        .ignoringRequestMatchers("/api/validacion/**"))
+                .securityContext(context -> context.securityContextRepository(securityContextRepository()))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/csrf", "/api/auth/terms", "/api/auth/register", "/api/auth/login",
+                                "/api/pacientes/register", "/api/pacientes/login",
+                                "/api/analitica/eventos", "/api/analitica/resumen", "/api/analitica/panel",
+                                "/api/validacion/eventos", "/api/validacion/panel")
+                        .permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((request, response, exception) -> {
+                            response.setStatus(401);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"Inicia sesión para continuar.\"}");
+                        })
+                        .accessDeniedHandler((request, response, exception) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\":\"Solicitud no autorizada. Actualiza la página.\"}");
+                        }))
+                .logout(logout -> logout.logoutUrl("/api/auth/logout")
+                        .invalidateHttpSession(true).clearAuthentication(true).deleteCookies("JSESSIONID")
+                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(204)));
         return http.build();
     }
 }

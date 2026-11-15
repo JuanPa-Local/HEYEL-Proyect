@@ -29,16 +29,20 @@ public class LimiteDeIntentos {
     private final Map<String, Bucket> fallosDeLogin = new ConcurrentHashMap<>();
     private final Map<String, Bucket> registros = new ConcurrentHashMap<>();
     private final Map<String, Bucket> eventos = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> validacion = new ConcurrentHashMap<>();
     private final int fallosDeLoginPorMinuto;
     private final int registrosPorHora;
     private final int eventosPorHora;
+    private final int validacionPorHora;
 
     public LimiteDeIntentos(@Value("${heyel.limite.login-fallidos-por-minuto}") int fallosDeLoginPorMinuto,
                             @Value("${heyel.limite.registros-por-hora}") int registrosPorHora,
-                            @Value("${heyel.limite.eventos-por-hora:60}") int eventosPorHora) {
+                            @Value("${heyel.limite.eventos-por-hora:60}") int eventosPorHora,
+                            @Value("${heyel.limite.validacion-por-hora:600}") int validacionPorHora) {
         this.fallosDeLoginPorMinuto = fallosDeLoginPorMinuto;
         this.registrosPorHora = registrosPorHora;
         this.eventosPorHora = eventosPorHora;
+        this.validacionPorHora = validacionPorHora;
     }
 
     public void verificarLogin(String ip, String email) {
@@ -74,6 +78,15 @@ public class LimiteDeIntentos {
     // Analítica de la landing: evita que una sola IP infle las visitas.
     public void consumirEvento(String ip) {
         Bucket cubo = eventos.computeIfAbsent(ip, clave -> nuevoCubo(eventosPorHora, Duration.ofHours(1)));
+        ConsumptionProbe sonda = cubo.tryConsumeAndReturnRemaining(1);
+        if (!sonda.isConsumed()) {
+            throw new DemasiadosIntentosException(segundos(sonda.getNanosToWaitForRefill()));
+        }
+    }
+
+    // Prueba guiada: límite holgado porque varias personas pueden probar desde la misma red.
+    public void consumirValidacion(String ip) {
+        Bucket cubo = validacion.computeIfAbsent(ip, clave -> nuevoCubo(validacionPorHora, Duration.ofHours(1)));
         ConsumptionProbe sonda = cubo.tryConsumeAndReturnRemaining(1);
         if (!sonda.isConsumed()) {
             throw new DemasiadosIntentosException(segundos(sonda.getNanosToWaitForRefill()));

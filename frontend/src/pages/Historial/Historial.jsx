@@ -22,7 +22,7 @@ export default function Historial() {
   const [institucion, setInstitucion] = useState(TODAS);
   const [busqueda, setBusqueda] = useState('');
   const [recorrido, setRecorrido] = useState(false);
-    // La activación se avisa una sola vez por visita; el servidor además la cuenta una sola vez por paciente.
+  // La activación se avisa una sola vez por visita; el servidor además la cuenta una sola vez por paciente.
   const activacionAvisada = useRef(false);
 
   function avisarActivacion() {
@@ -74,6 +74,13 @@ export default function Historial() {
     (texto === '' || normalizar(r.titulo).includes(texto)));
   const visibles = porCategoriaYBusqueda.filter(r => institucion === TODAS || r.institucionId === institucion);
 
+  // Avisa qué instituciones se ven en pantalla; la prueba guiada lo usa para comprobar la tarea 4.
+  useEffect(() => {
+    if (!estado.datos) return;
+    const nombres = [...new Set(visibles.map(r => r.institucionNombre))];
+    window.dispatchEvent(new CustomEvent('heyel:visibles', { detail: { nombres } }));
+  }, [estado.datos, categoria, institucion, texto]);
+
   function quitarFiltros() {
     setCategoria(TODAS);
     setInstitucion(TODAS);
@@ -99,7 +106,7 @@ export default function Historial() {
     {registros.length > 0 && <button type="button" className="boton-recorrido" onClick={() => setRecorrido(true)}>
       ¿Primera vez aquí? Ver recorrido guiado
     </button>}
-    {recorrido && <Recorrido onCerrar={() => setRecorrido(false)}/>}
+    {recorrido && <Recorrido onCerrar={() => setRecorrido(false)} />}
 
     {datosSimulados && <p className="message demo">
       <strong>Datos de demostración.</strong> Las instituciones y los registros de este prototipo son ficticios.
@@ -120,7 +127,7 @@ export default function Historial() {
     {registros.length > 0 && <div className="filtros">
       <label className="buscador">Buscar por nombre
         <input type="search" value={busqueda} onChange={e => buscar(e.target.value)}
-          placeholder="Por ejemplo, hemograma" autoComplete="off"/>
+          placeholder="Por ejemplo, hemograma" autoComplete="off" />
       </label>
       <div className="chips" role="group" aria-label="Filtrar por categoría">
         <button type="button" className="chip" aria-pressed={categoria === TODAS} onClick={() => elegirCategoria(TODAS)}>Todos</button>
@@ -140,7 +147,7 @@ export default function Historial() {
       <summary>Ver gráfica por institución</summary>
       <GraficaInstituciones registros={porCategoriaYBusqueda}
         instituciones={instituciones} seleccionada={institucion === TODAS ? null : institucion}
-        onSeleccionar={id => elegirInstitucion(id ?? TODAS)}/>
+        onSeleccionar={id => elegirInstitucion(id ?? TODAS)} />
     </details>}
 
     {filtrando && <div className="filtros-activos" role="group" aria-label="Filtros activos">
