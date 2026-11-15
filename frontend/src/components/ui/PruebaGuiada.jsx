@@ -62,6 +62,8 @@ export default function PruebaGuiada() {
   const [paso, setPaso] = useState('intro');
   const [salud, setSalud] = useState('');
   const [edad, setEdad] = useState('');
+  const [minimizada, setMinimizada] = useState(false);
+  const panelRef = useRef(null);
   const ref = useRef(estado);
 
   function actualizar(nuevo) { ref.current = nuevo; setEstado(nuevo); guardar(nuevo); }
@@ -129,6 +131,22 @@ export default function PruebaGuiada() {
     return () => { clearInterval(intervalo); marcado?.classList.remove('recorrido-foco'); };
   }, [pista, estado?.tarea, estado?.fase]);
 
+
+  // En celular el panel flotante tapa la parte de abajo de la página (por ejemplo, el botón «Registrarme»).
+  // Mientras se ve, se agrega espacio al final de la página del mismo alto del panel para poder bajar hasta eso.
+  const enTareas = Boolean(activa && hash !== '#panel' && estado && (estado.fase === 'tareas' || estado.fase === 'fin'));
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!enTareas || !panel) return undefined;
+    const ajustar = () => { document.body.style.paddingBottom = `${panel.offsetHeight + 40}px`; };
+    ajustar();
+    const observador = typeof ResizeObserver === 'function' ? new ResizeObserver(ajustar) : null;
+    observador?.observe(panel);
+    return () => { observador?.disconnect(); document.body.style.paddingBottom = ''; };
+  }, [enTareas, minimizada, estado?.tarea, estado?.fase]);
+
+  // Cada tarea nueva se muestra completa.
+  useEffect(() => { setMinimizada(false); }, [estado?.tarea]);
   function saltarDemo() {
     const sid = nuevoId();
     ref.current = { sid };
@@ -209,7 +227,7 @@ export default function PruebaGuiada() {
   }
 
   if (estado.fase === 'fin') {
-    return <div className="recorrido prueba" role="dialog" aria-labelledby="prueba-titulo">
+    return <div ref={panelRef} className="recorrido prueba" role="dialog" aria-labelledby="prueba-titulo">
       <p className="recorrido-paso">Prueba terminada</p>
       <h2 id="prueba-titulo">¡Gracias por probar HEYEL!</h2>
       <p>Terminaste las 5 tareas. Avísale a quien te compartió el enlace para responder una última encuesta.</p>
@@ -222,8 +240,19 @@ export default function PruebaGuiada() {
   if (estado.fase !== 'tareas') return null;
 
   const tarea = TAREAS[estado.tarea - 1];
-  return <div className="recorrido prueba" role="dialog" aria-labelledby="prueba-titulo" aria-describedby="prueba-texto">
-    <p className="recorrido-paso">Tarea {estado.tarea} de {TAREAS.length}</p>
+  if (minimizada) {
+    return <div ref={panelRef} className="recorrido prueba prueba-mini">
+      <button type="button" className="prueba-ver" onClick={() => setMinimizada(false)}
+        aria-label={`Ver la tarea ${estado.tarea} de ${TAREAS.length}: ${tarea.titulo}`}>
+        <span className="recorrido-paso">Tarea {estado.tarea} de {TAREAS.length}</span> {tarea.titulo} <span aria-hidden="true">▴</span>
+      </button>
+    </div>;
+  }
+  return <div ref={panelRef} className="recorrido prueba" role="dialog" aria-labelledby="prueba-titulo" aria-describedby="prueba-texto">
+    <div className="prueba-encabezado">
+      <p className="recorrido-paso">Tarea {estado.tarea} de {TAREAS.length}</p>
+      <button type="button" className="prueba-ocultar" onClick={() => setMinimizada(true)}>Ocultar <span aria-hidden="true">▾</span></button>
+    </div>
     <h2 id="prueba-titulo">{tarea.titulo}</h2>
     <p id="prueba-texto">{tarea.texto}</p>
     {tarea.respuesta && <input className="prueba-respuesta" aria-label="Tu respuesta" value={respuesta}

@@ -15,3 +15,17 @@
 .prueba-grupo legend{font-size:14px;font-weight:700;padding:0 6px}
 .prueba-opcion{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:400;cursor:pointer}
 .prueba-opcion input{display:inline-block;width:20px;height:20px;margin:0;accent-color:#193f36}
+
+.prueba-encabezado{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.prueba-ocultar{background:none;border:0;color:#3a6255;font:inherit;font-size:14px;font-weight:700;padding:6px 4px;cursor:pointer}
+.prueba-mini{padding:0}
+.prueba-ver{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;padding:12px 16px;font:inherit;font-size:15px;font-weight:700;color:#183d39;text-align:left;cursor:pointer}
+.prueba-ver span:last-child{margin-left:auto}
+@media (max-width:600px){
+  .recorrido.prueba{bottom:8px;padding:12px 14px}
+  .recorrido.prueba h2{font-size:18px;margin:2px 0 4px}
+  .recorrido.prueba p{font-size:14px;line-height:1.4}
+  .recorrido.prueba .recorrido-acciones{margin-top:10px;gap:6px}
+  .recorrido.prueba .retry,.recorrido.prueba .recorrido-siguiente{padding:8px 12px;font-size:14px}
+  .recorrido.prueba.prueba-mini{padding:0}
+}
