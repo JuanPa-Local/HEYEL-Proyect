@@ -11,13 +11,14 @@ const CENTRO = 'Centro de Imágenes del Norte';
 export const TAREAS = [
   { titulo: 'Crea una cuenta', texto: 'Crea una cuenta nueva en HEYEL aceptando las condiciones de uso.', pistas: ['.checkbox-label', '.landing-registrarme'] },
   { titulo: 'Sal y vuelve a entrar', texto: 'Cierra sesión y vuelve a entrar con la cuenta que acabas de crear.', pistas: ['.logout', 'form .primary'] },
-  { titulo: 'Tu examen más reciente', texto: '¿Cuál es tu examen de laboratorio más reciente y en qué institución te lo hicieron? Escríbelo aquí abajo.', pistas: ['.ultimo-examen'], respuesta: true },
+  { titulo: 'Tu examen más reciente', texto: '¿Cuál es tu examen de laboratorio más reciente? Escribe su nombre aquí abajo.', pistas: ['.ultimo-examen'], respuesta: true },
   { titulo: 'Una sola institución', texto: 'Deja en pantalla solo los registros del Centro de Imágenes del Norte.', pistas: ['.filtro-institucion', '.filtros'] },
   { titulo: 'Cierra sesión', texto: 'Cuando termines, cierra sesión.', pistas: ['.logout'] },
 ];
 
 const VACIAS = new Set(['del', 'las', 'los', 'con', 'sin', 'por', 'para']);
-const GENERICAS = new Set(['laboratorio', 'clinico', 'clinica', 'centro']);
+// Palabras que comparten varios exámenes y no bastan para saber cuál dijo la persona.
+const COMUNES = new Set(['completo', 'sangre', 'ayunas', 'examen']);
 
 function normalizar(texto) {
   return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -27,11 +28,10 @@ function palabras(texto, descartar) {
   return normalizar(texto).split(/[^a-z0-9]+/).filter(p => p.length >= 3 && !VACIAS.has(p) && !descartar.has(p));
 }
 
-// La respuesta es correcta si menciona una palabra del examen y una palabra propia de la institución.
+// La respuesta es correcta si menciona el nombre del examen (igual que en R1 y R2, sin pedir la institución).
 export function respuestaCorrecta(respuesta, examen) {
   const r = normalizar(respuesta);
-  const menciona = lista => lista.some(p => r.includes(p));
-  return menciona(palabras(examen.titulo, new Set())) && menciona(palabras(examen.institucionNombre, GENERICAS));
+  return palabras(examen.titulo, COMUNES).some(p => r.includes(p));
 }
 
 function leer() {
@@ -187,7 +187,7 @@ export default function PruebaGuiada() {
       if (examen && respuestaCorrecta(respuesta, examen)) cerrarTarea('TAREA_OK');
       else {
         enviar('TAREA_FALLO', { tarea: 3 });
-        setAviso('Revisa tu respuesta: escribe el examen y la institución donde te lo hicieron.');
+        setAviso('Revisa tu respuesta: escribe el nombre de tu examen de laboratorio más reciente.');
       }
     } catch { setAviso('No pudimos comprobar tu respuesta. Inténtalo de nuevo.'); }
   }
@@ -256,7 +256,7 @@ export default function PruebaGuiada() {
     <h2 id="prueba-titulo">{tarea.titulo}</h2>
     <p id="prueba-texto">{tarea.texto}</p>
     {tarea.respuesta && <input className="prueba-respuesta" aria-label="Tu respuesta" value={respuesta}
-      placeholder="Examen y institución" onChange={e => setRespuesta(e.target.value)}
+      placeholder="Nombre del examen" onChange={e => setRespuesta(e.target.value)}
       onKeyDown={e => { if (e.key === 'Enter') comprobar(); }}/>}
     {aviso && <p role="alert" className="message error">{aviso}</p>}
     <div className="recorrido-acciones">
