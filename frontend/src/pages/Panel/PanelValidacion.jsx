@@ -38,7 +38,7 @@ export default function PanelValidacion() {
       </ul>
       <table className="historial-tabla">
         <caption className="visually-hidden">Resultado por tarea</caption>
-        <thead><tr><th scope="col">Tarea</th><th scope="col">Intentaron</th><th scope="col">Éxito sin ayuda</th><th scope="col">Éxito con ayuda</th><th scope="col">Saltaron</th><th scope="col">Se salieron</th><th scope="col">Respuestas erradas</th><th scope="col">Tiempo prom. sin ayuda (s)</th></tr></thead>
+        <thead><tr><th scope="col">Tarea</th><th scope="col">Intentaron</th><th scope="col">Éxito sin ayuda</th><th scope="col">Éxito con ayuda</th><th scope="col">Saltaron</th><th scope="col">Se salieron</th><th scope="col">Respuestas erradas</th><th scope="col">Tiempo prom. sin ayuda (s)</th><th scope="col">Tiempo prom. con ayuda (s)</th><th scope="col">Tiempo prom. total (s)</th></tr></thead>
         <tbody>
           {datos.tareas.map(t => <tr key={t.tarea}>
             <td data-label="Tarea">{t.tarea}</td>
@@ -49,6 +49,8 @@ export default function PanelValidacion() {
             <td data-label="Se salieron">{t.abandonaron}</td>
             <td data-label="Respuestas erradas">{t.respuestasErradas}</td>
             <td data-label="Tiempo prom. sin ayuda (s)">{num(t.tiempoPromedioSinAyuda)}</td>
+            <td data-label="Tiempo prom. con ayuda (s)">{num(t.tiempoPromedioConAyuda)}</td>
+            <td data-label="Tiempo prom. total (s)">{num(t.tiempoPromedioTotal)}</td>
           </tr>)}
         </tbody>
       </table>

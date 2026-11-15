@@ -33,7 +33,8 @@ public class ValidacionService {
     }
 
     public record ResumenTarea(String tarea, long intentaron, long exitoSinAyuda, long exitoConAyuda, long saltadas,
-            long abandonaron, long respuestasErradas, Double tiempoPromedioSinAyuda) {
+            long abandonaron, long respuestasErradas, Double tiempoPromedioSinAyuda, Double tiempoPromedioConAyuda,
+            Double tiempoPromedioTotal) {
     }
 
     public record SesionResumen(String codigo, String estado, OffsetDateTime inicio, String salud, String edad,
@@ -70,7 +71,7 @@ public class ValidacionService {
         long iniciadas = 0, saltaron = 0, completaron = 0, abandonaron = 0, enCurso = 0;
         long sumaRecorridos = 0, recorridos = 0;
         long[] okSin = new long[n], okCon = new long[n], saltadas = new long[n];
-        long[] salieron = new long[n], erradas = new long[n], segundosSin = new long[n];
+        long[] salieron = new long[n], erradas = new long[n], segundosSin = new long[n], segundosCon = new long[n];
         List<SesionResumen> sesiones = new ArrayList<>();
 
         for (Map.Entry<String, List<EventoValidacion>> entrada : porSesion.entrySet()) {
@@ -109,6 +110,7 @@ public class ValidacionService {
                     int s = e.getSegundos() == null ? 0 : e.getSegundos();
                     if (e.isAyuda()) {
                         okCon[t]++;
+                        segundosCon[t] += s;
                         resultado[t] = "OK con ayuda · " + s + " s";
                     } else {
                         okSin[t]++;
@@ -143,7 +145,8 @@ public class ValidacionService {
         List<ResumenTarea> tareas = new ArrayList<>();
         for (int t = 0; t < n; t++) {
             tareas.add(new ResumenTarea(TAREAS.get(t), okSin[t] + okCon[t] + saltadas[t] + salieron[t],
-                    okSin[t], okCon[t], saltadas[t], salieron[t], erradas[t], promedio(segundosSin[t], okSin[t])));
+                    okSin[t], okCon[t], saltadas[t], salieron[t], erradas[t], promedio(segundosSin[t], okSin[t]), promedio(segundosCon[t], okCon[t]),
+                    promedio(segundosSin[t] + segundosCon[t], okSin[t] + okCon[t])));
         }
         Collections.reverse(sesiones);
         return new Panel(iniciadas, saltaron, completaron, abandonaron, enCurso,
