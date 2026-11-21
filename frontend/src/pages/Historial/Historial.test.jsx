@@ -218,6 +218,15 @@ describe('MVP final', () => {
     expect(within(screen.getByRole('group', { name: 'Tipo de registro' })).getByRole('button', { name: 'Todos los tipos' })).toBeTruthy();
     expect(within(screen.getByRole('group', { name: 'Institución donde te atendieron' })).getByRole('button', { name: 'Todas las instituciones' })).toBeTruthy();
   });
+
+  it('dice en pantalla que el historial va del más reciente al más antiguo (H11)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    const tabla = await screen.findByRole('table');
+    const orden = screen.getByText('Ordenado del más reciente al más antiguo');
+    expect(orden.compareDocumentPosition(tabla) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: /Fecha.*más reciente primero/ })).toBeTruthy();
+  });
 });
 
 describe('Instrumentación del historial', () => {

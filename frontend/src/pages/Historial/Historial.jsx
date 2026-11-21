@@ -179,9 +179,11 @@ export default function Historial() {
         ? <div className="vacio">
           <p>No hay registros con estos filtros.</p>
         </div>
-        : <table className="historial-tabla">
+        : <>
+        <p className="orden-historial"><span aria-hidden="true">↓</span> Ordenado del más reciente al más antiguo</p>
+        <table className="historial-tabla">
           <caption className="visually-hidden">Registros clínicos ordenados del más reciente al más antiguo</caption>
-          <thead><tr><th scope="col">Fecha</th><th scope="col">Registro</th><th scope="col">Institución</th><th scope="col">Categoría</th></tr></thead>
+          <thead><tr><th scope="col">Fecha <span className="visually-hidden">(más reciente primero)</span><span aria-hidden="true">↓</span></th><th scope="col">Registro</th><th scope="col">Institución</th><th scope="col">Categoría</th></tr></thead>
           <tbody>
             {visibles.map(registro => <tr key={registro.id}>
               <td data-label="Fecha"><time dateTime={registro.fecha}>{formatearFecha(registro.fecha)}</time></td>
@@ -190,6 +192,7 @@ export default function Historial() {
               <td data-label="Categoría"><span className={`tag tag-${registro.categoria.toLowerCase()}`}>{registro.categoriaEtiqueta}</span></td>
             </tr>)}
           </tbody>
-        </table>}
+        </table>
+        </>}
   </section>;
 }
