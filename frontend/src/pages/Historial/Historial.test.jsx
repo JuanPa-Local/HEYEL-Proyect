@@ -21,6 +21,11 @@ const datos = {
   ],
 };
 
+function elegirInstitucion(nombre) {
+  const grupo = screen.getByRole('group', { name: 'Filtrar por institución' });
+  fireEvent.click(within(grupo).getByRole('button', { name: nombre }));
+}
+
 function filas() {
   return screen.getAllByRole('row').slice(1).map(fila => within(fila).getAllByRole('cell')[1].querySelector('strong').textContent);
 }
@@ -67,7 +72,7 @@ describe('Filtros del historial (US-04, US-05)', () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
     await screen.findByRole('table');
-    const ayuda = screen.getByText('Toca una categoría o escoge una institución para filtrar tu historial.');
+    const ayuda = screen.getByText('Toca una categoría o el nombre de una institución para filtrar tu historial.');
     const filtros = screen.getByRole('group', { name: 'Filtrar por categoría' }).closest('.filtros');
     expect(filtros.previousElementSibling).toBe(ayuda);
   });
@@ -76,7 +81,7 @@ describe('Filtros del historial (US-04, US-05)', () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
     await screen.findByRole('table');
-    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: ips.id } });
+          elegirInstitucion(ips.nombre);
     expect(filas()).toEqual(['Consulta de medicina general', 'Glicemia en ayunas']);
   });
 
@@ -84,7 +89,7 @@ describe('Filtros del historial (US-04, US-05)', () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
     await screen.findByRole('table');
-    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: lab.id } });
+    elegirInstitucion(lab.nombre);
     fireEvent.click(screen.getByRole('button', { name: 'Consulta' }));
     expect(screen.getByText('No hay registros con estos filtros.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Quitar filtros' }));
@@ -108,7 +113,7 @@ describe('Updates del Release 2', () => {
     fireEvent.change(screen.getByLabelText('Buscar por nombre'), { target: { value: 'GLICEMIA' } });
     expect(filas()).toEqual(['Glicemia en ayunas']);
     expect(screen.getByText('Mostrando 1 de 3 registros')).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: lab.id } });
+    elegirInstitucion(lab.nombre);
     expect(screen.getByText('No hay registros con estos filtros.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Quitar filtros' }));
     expect(screen.getByLabelText('Buscar por nombre').value).toBe('');
@@ -150,7 +155,7 @@ describe('Updates del Release 3', () => {
     render(<Historial/>);
     await screen.findByRole('table');
     expect(screen.queryByRole('group', { name: 'Filtros activos' })).toBeNull();
-    fireEvent.change(screen.getByLabelText('Institución'), { target: { value: ips.id } });
+          elegirInstitucion(ips.nombre);
     const activos = screen.getByRole('group', { name: 'Filtros activos' });
     expect(within(activos).getByText(/IPS Salud Vital/)).toBeTruthy();
     fireEvent.click(within(activos).getByRole('button', { name: 'Quitar filtro IPS Salud Vital' }));
@@ -189,6 +194,21 @@ describe('Updates del Release 3', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(filas()).toHaveLength(3);
     expect(analiticaService.activacion).not.toHaveBeenCalled();
+  });
+});
+
+describe('MVP final', () => {
+  it('muestra cada institución como un botón visible y al tocarlo de nuevo se quita el filtro (H10)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    const grupo = screen.getByRole('group', { name: 'Filtrar por institución' });
+    expect(within(grupo).getAllByRole('button').map(b => b.textContent)).toEqual(['Todas', 'IPS Salud Vital', 'Laboratorio Clínico Andino']);
+    elegirInstitucion(lab.nombre);
+    expect(filas()).toEqual(['Hemograma completo']);
+    expect(within(grupo).getByRole('button', { name: lab.nombre }).getAttribute('aria-pressed')).toBe('true');
+    elegirInstitucion(lab.nombre);
+    expect(filas()).toHaveLength(3);
   });
 });
 

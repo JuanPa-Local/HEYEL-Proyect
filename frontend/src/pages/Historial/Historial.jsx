@@ -122,7 +122,7 @@ export default function Historial() {
       <span className="detalle">{ultimoExamen.detalle}</span>
     </article>}
 
-    {registros.length > 0 && <p className="ayuda-filtros">Toca una categoría o escoge una institución para filtrar tu historial.</p>}
+    {registros.length > 0 && <p className="ayuda-filtros">Toca una categoría o el nombre de una institución para filtrar tu historial.</p>}
 
     {registros.length > 0 && <div className="filtros">
       <label className="buscador">Buscar por nombre
@@ -134,12 +134,11 @@ export default function Historial() {
         {categorias.map(c => <button key={c.valor} type="button" className="chip"
           aria-pressed={categoria === c.valor} onClick={() => elegirCategoria(c.valor)}>{c.etiqueta}</button>)}
       </div>
-      <label className="filtro-institucion">Institución
-        <select value={institucion} onChange={e => elegirInstitucion(e.target.value)}>
-          <option value={TODAS}>Todas las instituciones</option>
-          {instituciones.map(i => <option key={i.id} value={i.id}>{i.nombre}</option>)}
-        </select>
-      </label>
+      <div className="chips filtro-institucion" role="group" aria-label="Filtrar por institución">
+        <button type="button" className="chip" aria-pressed={institucion === TODAS} onClick={() => elegirInstitucion(TODAS)}>Todas</button>
+        {instituciones.map(i => <button key={i.id} type="button" className="chip"
+          aria-pressed={institucion === i.id} onClick={() => elegirInstitucion(institucion === i.id ? TODAS : i.id)}>{i.nombre}</button>)}
+      </div>
       {filtrando && <button type="button" className="retry" onClick={quitarFiltros}>Quitar filtros</button>}
     </div>}
 
