@@ -227,6 +227,15 @@ describe('MVP final', () => {
     expect(orden.compareDocumentPosition(tabla) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: /Fecha.*más reciente primero/ })).toBeTruthy();
   });
+
+  it('muestra la fecha completa, con el mes escrito, en la tabla y en el último examen (H13)', async () => {
+    expect(formatearFecha('2026-08-15')).toMatch(/15 de agosto de 2026/);
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    const tarjeta = await screen.findByRole('article', { name: 'TU ÚLTIMO EXAMEN' });
+    expect(within(tarjeta).getByText(/Fecha:/).textContent).toMatch(/agosto de 2026/);
+    expect(within(screen.getByRole('table')).getByText(/15 de agosto de 2026/)).toBeTruthy();
+  });
 });
 
 describe('Instrumentación del historial', () => {

@@ -4,7 +4,8 @@ import { analiticaService } from '../../api/services/analiticaService';
 import GraficaInstituciones from './GraficaInstituciones';
 import Recorrido from '../../components/ui/Recorrido';
 
-const formatoFecha = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+// Fecha completa, con el mes escrito, para que no haya dudas de cuándo fue cada registro (H13).
+const formatoFecha = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 const TODAS = 'TODAS';
 
 export function formatearFecha(iso) {
@@ -118,7 +119,7 @@ export default function Historial() {
     {ultimoExamen && <article className="ultimo-examen" aria-labelledby="ultimo-examen-titulo">
       <p className="eyebrow" id="ultimo-examen-titulo">TU ÚLTIMO EXAMEN</p>
       <strong>{ultimoExamen.titulo}</strong>
-      <span><time dateTime={ultimoExamen.fecha}>{formatearFecha(ultimoExamen.fecha)}</time> · {ultimoExamen.institucionNombre}</span>
+      <span><span className="fecha-destacada">Fecha: <time dateTime={ultimoExamen.fecha}>{formatearFecha(ultimoExamen.fecha)}</time></span> · {ultimoExamen.institucionNombre}</span>
       <span className="detalle">{ultimoExamen.detalle}</span>
     </article>}
 
@@ -186,7 +187,7 @@ export default function Historial() {
           <thead><tr><th scope="col">Fecha <span className="visually-hidden">(más reciente primero)</span><span aria-hidden="true">↓</span></th><th scope="col">Registro</th><th scope="col">Institución</th><th scope="col">Categoría</th></tr></thead>
           <tbody>
             {visibles.map(registro => <tr key={registro.id}>
-              <td data-label="Fecha"><time dateTime={registro.fecha}>{formatearFecha(registro.fecha)}</time></td>
+              <td data-label="Fecha" className="fecha-destacada"><time dateTime={registro.fecha}>{formatearFecha(registro.fecha)}</time></td>
               <td data-label="Registro"><strong>{registro.titulo}</strong><span className="detalle">{registro.detalle}</span></td>
               <td data-label="Institución">{registro.institucionNombre}</td>
               <td data-label="Categoría"><span className={`tag tag-${registro.categoria.toLowerCase()}`}>{registro.categoriaEtiqueta}</span></td>
