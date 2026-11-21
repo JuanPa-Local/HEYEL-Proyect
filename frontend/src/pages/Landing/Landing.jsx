@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import LecturaFacil from '../../components/ui/LecturaFacil';
 import Brand from '../../components/layout/Brand';
 import { analiticaService } from '../../api/services/analiticaService';
-import recorrido from '../../assets/recorrido-heyel.gif';
+import captura from '../../assets/historial-mvp.png';
 
 // Una visita por pestaña: recargar la landing no la vuelve a contar.
 function contarVisita() {
@@ -42,8 +42,8 @@ export default function Landing() {
           </a>
           <p className="hint">Prototipo: las instituciones y los registros son de demostración. Todavía no se conecta con EPS reales.</p>
         </div>
-        <img className="landing-captura" src={recorrido} width="960" height="600"
-          alt="Recorrido por la app real de HEYEL: crear la cuenta, ver el último examen, filtrar el historial, ver la gráfica por institución y abrir el recorrido guiado"/>
+        <img className="landing-captura" src={captura} width="1160" height="842"
+          alt="Historial de HEYEL en la versión final: filtros por tipo de registro y por institución con botones, los filtros activos con su X y la tabla ordenada del más reciente al más antiguo con la fecha completa"/>
       </section>
 
       <section className="landing-pasos" aria-labelledby="pasos-titulo">
@@ -51,7 +51,8 @@ export default function Landing() {
         <ol>
           <li><strong>Crea tu cuenta</strong><span>Con tu nombre, correo y una contraseña. Toma menos de un minuto.</span></li>
           <li><strong>Ve tu historial en un solo lugar</strong><span>Exámenes, imágenes y consultas de varias instituciones, del más reciente al más antiguo.</span></li>
-          <li><strong>Encuentra lo que necesitas</strong><span>Tu último examen aparece primero, y puedes buscar por nombre o filtrar por categoría e institución.</span></li>
+          <li><strong>Encuentra lo que necesitas</strong><span>Tu último examen aparece primero, y puedes buscar por nombre o tocar el tipo de registro y la institución donde te atendieron.</span></li>
+          <li><strong>Léelo sin esfuerzo</strong><span>Con el botón «A+ Letra grande» toda la app se ve más grande, para que cualquiera la pueda usar.</span></li>
         </ol>
         <a className="primary landing-cta" href="#registro"
           onClick={() => analiticaService.registrar('CLIC_CREAR_CUENTA')}>
