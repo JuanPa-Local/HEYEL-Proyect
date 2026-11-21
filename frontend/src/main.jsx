@@ -8,6 +8,7 @@ import Panel from './pages/Panel/Panel';
 import { authService } from './api/services/authService';
 import Brand from './components/layout/Brand';
 import PruebaGuiada from './components/ui/PruebaGuiada';
+import LecturaFacil from './components/ui/LecturaFacil';
 import heyelMark from './assets/heyel-mark.png';
 import './style.css';
 import './validacion.css';
@@ -42,6 +43,6 @@ function App() {
   if (!loading && user) return <Dashboard user={user} onLogout={logout} error={error}/>;
   // Sin sesión y sin elegir login o registro, la raíz muestra la landing.
   if (!loading && !error && page !== '#login' && page !== '#registro') return <Landing/>;
-  return <main className="shell"><aside className="story"><Brand/><div className="story-copy"><span className="pill">CONTIGO, EN CADA PASO</span><h2>Cuidarte empieza<br/>por conocerte.</h2><p>El primer paso es crear tu cuenta.</p><div className="orbit" aria-hidden="true"><img src={heyelMark} alt="" width="190" height="190"/></div></div></aside><section className="content"><div className="form-wrap">{loading ? <p role="status">Preparando tu espacio…</p> : <>{error && <p role="alert" className="message error">{error}</p>}{page === '#registro' ? <Register onRegistered={u => { emitir('registro'); if (u) { setUser(u); setError(''); return; } setNotice('Tu cuenta está lista. Inicia sesión para continuar.'); location.hash = 'login'; setPage('#login'); }}/> : <Login notice={notice} onLogin={u => { setUser(u); setError(''); emitir('login'); }}/>}</>}</div><footer>HEYEL · Un paso más cerca de tu bienestar.</footer></section></main>;
+  return <main className="shell"><aside className="story"><Brand/><div className="story-copy"><span className="pill">CONTIGO, EN CADA PASO</span><h2>Cuidarte empieza<br/>por conocerte.</h2><p>El primer paso es crear tu cuenta.</p><div className="orbit" aria-hidden="true"><img src={heyelMark} alt="" width="190" height="190"/></div></div></aside><section className="content"><div className="form-wrap"><div className="lectura-auth"><LecturaFacil/></div>{loading ? <p role="status">Preparando tu espacio…</p> : <>{error && <p role="alert" className="message error">{error}</p>}{page === '#registro' ? <Register onRegistered={u => { emitir('registro'); if (u) { setUser(u); setError(''); return; } setNotice('Tu cuenta está lista. Inicia sesión para continuar.'); location.hash = 'login'; setPage('#login'); }}/> : <Login notice={notice} onLogin={u => { setUser(u); setError(''); emitir('login'); }}/>}</>}</div><footer>HEYEL · Un paso más cerca de tu bienestar.</footer></section></main>;
 }
 createRoot(document.getElementById('root')).render(<><App/><PruebaGuiada/></>);

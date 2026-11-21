@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import LecturaFacil from '../../components/ui/LecturaFacil';
 import Brand from '../../components/layout/Brand';
 import { analiticaService } from '../../api/services/analiticaService';
 import recorrido from '../../assets/recorrido-heyel.gif';
@@ -22,6 +23,7 @@ export default function Landing() {
     <header className="landing-header">
       <Brand/>
       <nav className="landing-acceso" aria-label="Acceso">
+        <LecturaFacil sobreOscuro/>
         <a className="landing-entrar" href="#login">Iniciar sesión</a>
         <a className="landing-registrarme" href="#registro"
           onClick={() => analiticaService.registrar('CLIC_CREAR_CUENTA')}>Crear cuenta</a>

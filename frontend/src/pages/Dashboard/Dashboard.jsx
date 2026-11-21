@@ -1,12 +1,14 @@
 import Brand from '../../components/layout/Brand';
 import Historial from '../Historial/Historial';
 import Soporte from '../../components/ui/Soporte';
+import LecturaFacil from '../../components/ui/LecturaFacil';
 
 export default function Dashboard({ user, onLogout, error }) {
   return <div className="app">
     <header className="app-header">
       <Brand/>
       <div className="app-user">
+        <LecturaFacil sobreOscuro/>
         <span>{user.fullName}</span>
         <button type="button" className="logout" onClick={onLogout}>Cerrar sesión</button>
       </div>
