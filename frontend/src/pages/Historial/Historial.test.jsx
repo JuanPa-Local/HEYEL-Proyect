@@ -22,7 +22,7 @@ const datos = {
 };
 
 function elegirInstitucion(nombre) {
-  const grupo = screen.getByRole('group', { name: 'Filtrar por institución' });
+  const grupo = screen.getByRole('group', { name: 'Institución donde te atendieron' });
   fireEvent.click(within(grupo).getByRole('button', { name: nombre }));
 }
 
@@ -60,7 +60,7 @@ describe('Filtros del historial (US-04, US-05)', () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
     await screen.findByRole('table');
-    const grupo = screen.getByRole('group', { name: 'Filtrar por categoría' });
+    const grupo = screen.getByRole('group', { name: 'Tipo de registro' });
     expect(within(grupo).queryByRole('button', { name: 'Imagenología' })).toBeNull();
     fireEvent.click(within(grupo).getByRole('button', { name: 'Laboratorio' }));
     expect(filas()).toEqual(['Hemograma completo', 'Glicemia en ayunas']);
@@ -72,8 +72,8 @@ describe('Filtros del historial (US-04, US-05)', () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
     await screen.findByRole('table');
-    const ayuda = screen.getByText('Toca una categoría o el nombre de una institución para filtrar tu historial.');
-    const filtros = screen.getByRole('group', { name: 'Filtrar por categoría' }).closest('.filtros');
+    const ayuda = screen.getByText('Escoge un tipo de registro o la institución donde te atendieron para filtrar tu historial.');
+    const filtros = screen.getByRole('group', { name: 'Tipo de registro' }).closest('.filtros');
     expect(filtros.previousElementSibling).toBe(ayuda);
   });
 
@@ -125,7 +125,7 @@ describe('Updates del Release 2', () => {
     render(<Historial/>);
     await screen.findByRole('table');
     const tarjeta = screen.getByRole('article', { name: 'TU ÚLTIMO EXAMEN' });
-    const filtros = screen.getByRole('group', { name: 'Filtrar por categoría' }).closest('.filtros');
+    const filtros = screen.getByRole('group', { name: 'Tipo de registro' }).closest('.filtros');
     const desplegable = screen.getByText('Ver gráfica por institución').closest('details');
     expect(desplegable.open).toBe(false);
     expect(tarjeta.compareDocumentPosition(filtros) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -202,13 +202,21 @@ describe('MVP final', () => {
     historialService.obtener.mockResolvedValueOnce(datos);
     render(<Historial/>);
     await screen.findByRole('table');
-    const grupo = screen.getByRole('group', { name: 'Filtrar por institución' });
-    expect(within(grupo).getAllByRole('button').map(b => b.textContent)).toEqual(['Todas', 'IPS Salud Vital', 'Laboratorio Clínico Andino']);
+    const grupo = screen.getByRole('group', { name: 'Institución donde te atendieron' });
+    expect(within(grupo).getAllByRole('button').map(b => b.textContent)).toEqual(['Todas las instituciones', 'IPS Salud Vital', 'Laboratorio Clínico Andino']);
     elegirInstitucion(lab.nombre);
     expect(filas()).toEqual(['Hemograma completo']);
     expect(within(grupo).getByRole('button', { name: lab.nombre }).getAttribute('aria-pressed')).toBe('true');
     elegirInstitucion(lab.nombre);
     expect(filas()).toHaveLength(3);
+  });
+  
+  it('separa con títulos visibles el tipo de registro y la institución (H10)', async () => {
+    historialService.obtener.mockResolvedValueOnce(datos);
+    render(<Historial/>);
+    await screen.findByRole('table');
+    expect(within(screen.getByRole('group', { name: 'Tipo de registro' })).getByRole('button', { name: 'Todos los tipos' })).toBeTruthy();
+    expect(within(screen.getByRole('group', { name: 'Institución donde te atendieron' })).getByRole('button', { name: 'Todas las instituciones' })).toBeTruthy();
   });
 });
 
@@ -218,7 +226,7 @@ describe('Instrumentación del historial', () => {
     render(<Historial/>);
     await screen.findByRole('table');
     expect(analiticaService.activacion).not.toHaveBeenCalled();
-    const grupo = screen.getByRole('group', { name: 'Filtrar por categoría' });
+    const grupo = screen.getByRole('group', { name: 'Tipo de registro' });
     fireEvent.click(within(grupo).getByRole('button', { name: 'Laboratorio' }));
     fireEvent.change(screen.getByLabelText('Buscar por nombre'), { target: { value: 'hemo' } });
     expect(analiticaService.activacion).toHaveBeenCalledTimes(1);

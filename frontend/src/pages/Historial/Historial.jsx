@@ -122,20 +122,22 @@ export default function Historial() {
       <span className="detalle">{ultimoExamen.detalle}</span>
     </article>}
 
-    {registros.length > 0 && <p className="ayuda-filtros">Toca una categoría o el nombre de una institución para filtrar tu historial.</p>}
+    {registros.length > 0 && <p className="ayuda-filtros">Escoge un tipo de registro o la institución donde te atendieron para filtrar tu historial.</p>}
 
     {registros.length > 0 && <div className="filtros">
       <label className="buscador">Buscar por nombre
         <input type="search" value={busqueda} onChange={e => buscar(e.target.value)}
           placeholder="Por ejemplo, hemograma" autoComplete="off" />
       </label>
-      <div className="chips" role="group" aria-label="Filtrar por categoría">
-        <button type="button" className="chip" aria-pressed={categoria === TODAS} onClick={() => elegirCategoria(TODAS)}>Todos</button>
+      <p className="filtro-titulo" id="titulo-tipo">Tipo de registro</p>
+      <div className="chips" role="group" aria-labelledby="titulo-tipo">
+        <button type="button" className="chip" aria-pressed={categoria === TODAS} onClick={() => elegirCategoria(TODAS)}>Todos los tipos</button>
         {categorias.map(c => <button key={c.valor} type="button" className="chip"
           aria-pressed={categoria === c.valor} onClick={() => elegirCategoria(c.valor)}>{c.etiqueta}</button>)}
       </div>
-      <div className="chips filtro-institucion" role="group" aria-label="Filtrar por institución">
-        <button type="button" className="chip" aria-pressed={institucion === TODAS} onClick={() => elegirInstitucion(TODAS)}>Todas</button>
+      <p className="filtro-titulo" id="titulo-institucion">Institución donde te atendieron</p>
+      <div className="chips filtro-institucion" role="group" aria-labelledby="titulo-institucion">
+        <button type="button" className="chip" aria-pressed={institucion === TODAS} onClick={() => elegirInstitucion(TODAS)}>Todas las instituciones</button>
         {instituciones.map(i => <button key={i.id} type="button" className="chip"
           aria-pressed={institucion === i.id} onClick={() => elegirInstitucion(institucion === i.id ? TODAS : i.id)}>{i.nombre}</button>)}
       </div>
