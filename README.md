@@ -4,9 +4,35 @@ HEYEL reúne en un solo lugar el historial clínico que un paciente tiene repart
 
 - **App desplegada y landing:** https://heyel.onrender.com (sin sesión, la raíz muestra la landing; «Crear mi cuenta» lleva al registro)
 - **Panel de analítica en vivo:** https://heyel.onrender.com/#panel
-- **Versión:** Release 3 (`v0.3`)
+- **Versión:** MVP final (`v1.0`)
+- **Estado:** desplegada y probada con usuarios en tres releases y una validación final
 
 > La app está en el plan gratuito de Render. Si nadie la ha usado en un rato, la primera carga puede tardar uno o dos minutos mientras el servidor arranca. Abran la URL unos minutos antes de una demo o de una prueba con usuarios.
+
+## Qué cambió en la versión v1.0 (MVP final)
+
+Los cinco cambios salen de la validación final con usuarios nuevos (hallazgos H10 a H13). Cada uno tiene su propio commit.
+
+| # | Update | Origen | Cómo se comprueba en la URL |
+| --- | --- | --- | --- |
+| 01 | El filtro de institución pasa de lista desplegable a botones | Hallazgo H10 | En el historial, bajo «Institución donde te atendieron», cada institución es un botón; al tocarlo filtra y al tocarlo otra vez quita el filtro |
+| 02 | Los grupos de filtros tienen título y ayuda más clara | Hallazgo H10 | Arriba de las categorías se lee «Tipo de registro» y el primer botón dice «Todos los tipos» |
+| 03 | El historial dice en qué orden está | Hallazgo H11 | Encima de la tabla se lee «Ordenado del más reciente al más antiguo» y la columna Fecha tiene una flecha ↓ |
+| 04 | Fecha completa y destacada en cada registro | Hallazgo H13 | Las fechas se ven como «15 de agosto de 2026» y en negrilla; la tarjeta del último examen muestra «Fecha: …» |
+| 05 | Modo de letra grande | Hallazgo H12 | El botón «A+ Letra grande» (landing, inicio de sesión, registro e historial) agranda letra y botones; la app lo recuerda en ese navegador |
+
+También se actualizó la landing: la captura ahora es el historial de la versión final y «Cómo funciona» tiene un cuarto paso sobre la letra grande.
+
+### Historia del producto
+
+| Versión | De dónde salen los cambios | Updates |
+| --- | --- | --- |
+| `v0.1` Release 1 | Historias de usuario US-01 a US-07 | Versión inicial |
+| `v0.2` Release 2 | Validación del Release 1 (H1 a H3) | 5 |
+| `v0.3` Release 3 | Validación del Release 2 (H6 a H9) y monitora | 12 |
+| `v1.0` MVP final | Validación final (H10 a H13) | 5 |
+
+Costos del proyecto: $0. La app, la base de datos y la analítica corren en el plan gratuito de Render.
 
 ## Qué cambió en la versión v0.3
 
@@ -189,11 +215,15 @@ render.yaml Blueprint de Render
 | GET | `/api/analitica/resumen` | Totales de visitas, clics y cuentas creadas |
 | POST | `/api/analitica/activacion` | Anota la activación del paciente con sesión la primera vez que usa un filtro, el buscador o la gráfica |
 | GET | `/api/analitica/panel` | Embudo (visitas, clics, registros, activados, regresaron) y los últimos 20 eventos, sin datos personales |
+| POST | `/api/validacion/eventos` | Guarda los tiempos y resultados de la prueba guiada (`/?validacion=1`) |
+| GET | `/api/validacion/panel` | Resultados de la prueba guiada por tarea |
 
 ## Límites conocidos
 
 - Las instituciones de salud son simuladas (`CatalogoInstitucionesSimuladas`); no hay conexión con instituciones reales.
 - La sesión vive en la memoria del servidor: funciona con una sola instancia.
+- En el plan gratuito el servidor se apaga tras 15 minutos sin uso y la primera carga puede tardar cerca de dos minutos.
+- La base gratuita de Render vence el 8 de diciembre de 2026; después hay que crear una nueva o pasar a un plan pago.
 - Las decisiones de autenticación y los pendientes de seguridad están en [docs/ENTREGA-AUTH.md](docs/ENTREGA-AUTH.md) y [docs/REVISION-SUPUESTOS.md](docs/REVISION-SUPUESTOS.md).
 
 ## Equipo
